@@ -20,3 +20,7 @@
 /Users/joe/Projects/Sandbox/Sandbox/obj/x86/Debug/Sandbox.csproj.CopyComplete
 /Users/joe/Projects/Sandbox/Sandbox/obj/x86/Debug/Sandbox.exe
 /Users/joe/Projects/Sandbox/Sandbox/obj/x86/Debug/Sandbox.pdb
+/Users/joe/OneDrive - University of New Hampshire/Code/SeniorProject/SeniorProject/Sandbox/Sandbox/obj/x86/Debug/Sandbox.csprojAssemblyReference.cache
+/Users/joe/OneDrive - University of New Hampshire/Code/SeniorProject/SeniorProject/Sandbox/Sandbox/obj/x86/Debug/Sandbox.csproj.CoreCompileInputs.cache
+/Users/joe/OneDrive - University of New Hampshire/Code/SeniorProject/SeniorProject/Sandbox/Sandbox/obj/x86/Debug/Sandbox.exe
+/Users/joe/OneDrive - University of New Hampshire/Code/SeniorProject/SeniorProject/Sandbox/Sandbox/obj/x86/Debug/Sandbox.pdb

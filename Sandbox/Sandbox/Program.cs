@@ -3,11 +3,24 @@ using Urho;
 
 namespace Sandbox
 {
-    class MainClass : Application
+    class Program : Application
     {
-        public static void Main(string[] args)
+        [Preserve]
+        public Program() : base(new ApplicationOptions(assetsFolder: "Data") { Height = 1024, Width = 576, Orientation = ApplicationOptions.OrientationType.Portrait }) { }
+
+        [Preserve]
+        public Program(ApplicationOptions opts) : base(opts) { }
+
+        static Program()
         {
-            Console.WriteLine("Hello World!");
+
         }
+
+        protected override void Start()
+        {
+
+        }
+
+
     }
 }
