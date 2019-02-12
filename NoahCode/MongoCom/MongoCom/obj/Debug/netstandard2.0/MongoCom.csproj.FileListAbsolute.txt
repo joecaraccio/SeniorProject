@@ -1,0 +1,6 @@
+C:\Users\mrcow.LAPTOP-MOVREIBO\Documents\Visual Studio 2017\Projects\MongoCom\MongoCom\bin\Debug\netstandard2.0\MongoCom.deps.json
+C:\Users\mrcow.LAPTOP-MOVREIBO\Documents\Visual Studio 2017\Projects\MongoCom\MongoCom\bin\Debug\netstandard2.0\MongoCom.dll
+C:\Users\mrcow.LAPTOP-MOVREIBO\Documents\Visual Studio 2017\Projects\MongoCom\MongoCom\obj\Debug\netstandard2.0\MongoCom.csprojAssemblyReference.cache
+C:\Users\mrcow.LAPTOP-MOVREIBO\Documents\Visual Studio 2017\Projects\MongoCom\MongoCom\obj\Debug\netstandard2.0\MongoCom.csproj.CoreCompileInputs.cache
+C:\Users\mrcow.LAPTOP-MOVREIBO\Documents\Visual Studio 2017\Projects\MongoCom\MongoCom\obj\Debug\netstandard2.0\MongoCom.AssemblyInfoInputs.cache
+C:\Users\mrcow.LAPTOP-MOVREIBO\Documents\Visual Studio 2017\Projects\MongoCom\MongoCom\obj\Debug\netstandard2.0\MongoCom.AssemblyInfo.cs
