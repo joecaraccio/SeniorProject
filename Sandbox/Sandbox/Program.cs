@@ -65,9 +65,13 @@ namespace Sandbox
          * meaning Z is outward.. RightHanded means Z is inward
          * X is Left Right, Z is Forward Back (Greater the Value the farther away), Y is Vertical
          * 
+         * have a cortana/gesture based menu that can appear
+         * which is atrans parent window locked at that certain point
          * 
-         * have the 'mode'
-        
+         * 
+         * use URHO gui elements to create things like timeline
+         * might need to make those square to you relatively
+           object placement focuses the object..allows you to move it
         */
 
         //Entry Point of Application
@@ -89,7 +93,6 @@ namespace Sandbox
 
             //Indicate if connection is succesful
 
-            return;
 
 
             // Create a node for the Earth
@@ -147,6 +150,8 @@ namespace Sandbox
             return LeftCamera.Node.WorldPosition;
         }
 
+        //Timestamp logging mode
+
         //Functions to be written
         //PlaceObject
         // we need to play an object knowing X,Y,Z... Scale..
@@ -162,7 +167,13 @@ namespace Sandbox
         public override void OnGestureManipulationUpdated(Vector3 relativeHandPosition) =>
             earthNode.Position = relativeHandPosition + earthPosBeforeManipulations;
 
-        public override void OnGestureTapped() { }
-        public override void OnGestureDoubleTapped() { }
+        public override void OnGestureTapped() {
+            System.Diagnostics.Debug.WriteLine("")
+        }
+
+
+        public override void OnGestureDoubleTapped() {
+
+        }
     }
 }
