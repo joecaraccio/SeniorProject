@@ -1,0 +1,2 @@
+E:\Code\SP2\Sandbox\Sandbox\obj\Debug\Sandbox.csprojAssemblyReference.cache
+E:\Code\SP2\Sandbox\Sandbox\obj\Debug\Sandbox.csproj.CoreCompileInputs.cache
