@@ -1,0 +1,1 @@
+C:\Users\Benjamin Miller\Documents\Senior\Senior Project\Hololens Code\SeniorProject\UrhoSharp\UrhoSharp\UrhoSharp.csproj;x86
