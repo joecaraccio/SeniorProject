@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
+//CANNOT HAVE ANY THING NAMED THE SAME OR ERRORS ENSUE
+//Last things need to do
+//remove projects (pas in title remove all objects assosiated
+//fix the info portion of DBObjects to convert correctly
+//in front end make sure people cant name things under the same name (possibly have program check title when they first pass in
+//implement log info
 namespace MongoCom
 {
     public class HoloTourCom
@@ -10,71 +16,76 @@ namespace MongoCom
 
         private ObjectId tourID;
         private string tourName;
-        private string objType;
-        private float objLocX;
-        private float objLocY;
-        private float objLocZ;
-        private float roll;
-        private float pitch;
-        private float yaw;
-        private float scale;
         private string connectionString;
         private MongoClient dbClient;
         private IMongoDatabase dataBase;
         
         public HoloTourCom(String tourName)
         {
-            //string user = "admin";
-            //string pass = "admin1";
-            //String authen = "SCRAM-SHA-1";
-            //MongoInternalIdentity inId = new MongoInternalIdentity("admin", user);
-            //PasswordEvidence passEvidnce = new PasswordEvidence(pass);
-            //MongoCredential mongoCredential = new MongoCredential(authen, inId, passEvidnce);
-            //List<MongoCredential> credentials = new List<MongoCredential>() { mongoCredential };
-
-            //MongoClientSettings settings = new MongoClientSettings();
-            //settings.Credentials = credentials;
-            //settings.Server = new MongoServerAddress("ds157574.mlab.com", 57574);
-            //dbClient = new MongoClient(settings);
-            connectionString = "mongodb://admin:admin1@ds157574.mlab.com:57574?connect=replicaSet";
+            connectionString = "mongodb://admin:TourGuide3546@ds157574.mlab.com:57574/holotours";
             dbClient = new MongoClient(connectionString); 
             dataBase = dbClient.GetDatabase("holotours");
-            tourID = ObjectId.GenerateNewId();
-            
+            this.tourName = tourName;
         }
-
-        public String test()
+        public void createNewTour()
         {
-            return "AAAAAAAAAAAAAAAAAAAAAA";
+            tourID = ObjectId.GenerateNewId();
+            var doc = new BsonDocument
+            {
+                {"tourID", tourID },
+                {"tourString", tourName }
+            };
+            var tourIndex = dataBase.GetCollection<BsonDocument>("tours");
+            tourIndex.InsertOne(doc);
+        }
+        public void openTour()
+        {
+            var collection = dataBase.GetCollection<BsonDocument>("tours");
+            var filter = Builders<BsonDocument>.Filter.Eq("tourString", tourName);
+            var id = collection.Find(filter).Single();
+            tourID = (ObjectId)id["tourID"];
         }
         public void setObject(BsonDocument holoObject, String objectType)
         {
             var objGrp = dataBase.GetCollection<BsonDocument>(objectType);
-            //BsonDocument document = objGrp.Find(FilterDefinition<BsonDocument>.Empty).Single();
             objGrp.InsertOne(holoObject);
-            //try
-            //{
-                //using (var cursor = await dbClient.ListDatabasesAsync())
-                //{
-                    //await cursor.ForEachAsync(document => Console.WriteLine(document.ToString()));
-                //}
-            //}
-            //catch
-            //{
-                //throw new IndexOutOfRangeException();
-            //}
         }
-        public String[] getObjects()
+        public List<DBObject> getObjects()
         {
-            string[] temp = { "", "", "" };
-            string connectionString = "mongodb://admin:admin1@ds157574.mlab.com:57574";
-            var dbClient = new MongoClient(connectionString);
-            var session = dbClient.StartSession();
-            IMongoDatabase dataBase = dbClient.GetDatabase("holotours");
-            
-            var filter = new BsonDocument("ProjectID", tourID);
+            List<DBObject> objects = new List<DBObject>();
+            var filter = Builders<BsonDocument>.Filter.Eq("tourID", tourID);
+            //loop through each collection
+            List<String> dbNames = dataBase.ListCollectionNames().ToList();
+            var tourStuff = new List<BsonDocument>();
+            var col = dataBase.GetCollection<BsonDocument>("foundStuff");
+            foreach ( String s in dbNames)
+            {
+                if (s == "tours")
+                {
 
-            return temp;
+                }
+                else
+                {
+                    var collection = dataBase.GetCollection<BsonDocument>((string)s);
+                    tourStuff.AddRange(collection.Find(filter).ToList());
+                }
+            }
+
+            foreach (BsonDocument i in tourStuff)
+            {
+                DBObject doc = new DBObject(i);
+                col.InsertOne(doc.returnDoc());
+                objects.Add(doc);
+            }
+
+
+            //get all items with matching id
+            //return them
+            return objects;
+        }
+        public void removeTour()
+        {
+
         }
         public ObjectId returnTourId()
         {
