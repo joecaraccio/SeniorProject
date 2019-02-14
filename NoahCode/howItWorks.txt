@@ -1,0 +1,43 @@
+Holocom object is the main class, that is the actual communication structure between mongo 
+and c#
+
+LogInfo is specifically to be used for the userLogging data
+while the objects will be DBObject type
+
+IN HOLOCOM
+
+To start use HoloTourCom(String var) this will initialize the communication, the parameter
+is the name of the current project or tour file. 
+Then use the function .createNewTour(Double heightofUser) if it new or
+.openTour( if we want to edit or read in the created tour)
+SideNote: tours cannot be named the same thing if this happens where you try to make a new 
+tour with a name that already exists i throw a ArgumentException probably best to put this in 
+try catch and throw a message to user if the error occurs telling them to change the name of the 
+project
+
+The showAllTourNames() function should return all previous made tours if u want to let users
+see the tours they can edit
+
+Set object is used to add things to database either DBOject or LogInfo, you need to initialize these
+objects in the line before just call them and make sure you pass values for all parameters
+
+Get object retrieves all DBObjects for a given project/tour and returns them as a List<DBObject>
+i added in return functions in DBObject to be able to get all values out of the DBObject
+
+returnTourId is used to get the id assigned to the project so you can make sure all items are
+under that same id, once you create new project you can call .returnTourId on your HoloTourCom object
+and use that as the first parameter in new DBObjects for that project (See uni test MakeNewTourInfo)
+
+returnTourName same concept as returnTourId
+
+get AdminHeight is meant for when u call a project that already made it saves the height of the
+person who made it and that can be used for calculations later to determine how to move object heights
+
+Finally there is removeAllTourObj, this removes all objects assosiated with a tourId/name to use it
+you must have an open project already so made your call to HoloCom constructor and called .openTour()
+then it will delete all items assosiated with that tour (there is currently no functionality to edit items
+this is why i think dumps in begining and end need to happen)
+So my idea would be once you open take all things from db and have them in program structs
+if anything changes delete all items assosiated in the database and then save all items from
+the program structs into database, this only way to update right now
+
