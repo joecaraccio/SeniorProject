@@ -4927,11 +4927,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mrcow.LAPTOP-MOVREIBO\\Documents\\Visual Studio 2017\\Projects\\MongoCom\\MongoCom\\MongoCom.csproj",
+      "projectUniqueName": "E:\\SeniorProject\\SeniorProject\\NoahCode\\MongoCom\\MongoCom\\MongoCom.csproj",
       "projectName": "MongoCom",
-      "projectPath": "C:\\Users\\mrcow.LAPTOP-MOVREIBO\\Documents\\Visual Studio 2017\\Projects\\MongoCom\\MongoCom\\MongoCom.csproj",
+      "projectPath": "E:\\SeniorProject\\SeniorProject\\NoahCode\\MongoCom\\MongoCom\\MongoCom.csproj",
       "packagesPath": "C:\\Users\\mrcow.LAPTOP-MOVREIBO\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mrcow.LAPTOP-MOVREIBO\\Documents\\Visual Studio 2017\\Projects\\MongoCom\\MongoCom\\obj\\",
+      "outputPath": "E:\\SeniorProject\\SeniorProject\\NoahCode\\MongoCom\\MongoCom\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

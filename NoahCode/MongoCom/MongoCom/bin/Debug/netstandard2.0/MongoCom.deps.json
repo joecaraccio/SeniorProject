@@ -11,6 +11,7 @@
         "dependencies": {
           "MongoDB.Bson": "2.7.3",
           "MongoDB.Driver": "2.7.3",
+          "MongoDB.Driver.Core": "2.7.3",
           "NETStandard.Library": "2.0.3"
         },
         "runtime": {
