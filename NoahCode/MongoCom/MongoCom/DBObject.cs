@@ -11,6 +11,7 @@ namespace MongoCom
         private BsonDocument document;
         private ObjectId tourID;
         private string tourName;
+        private string objectType;
         private double objLocX;
         private double objLocY;
         private double objLocZ;
@@ -19,12 +20,25 @@ namespace MongoCom
         private double yaw;
         private double scale;
         private String[] info;
-        public DBObject(ObjectId id, string name, double x, double y, double z, double rx, double ry, double rz, double s, String[] info)
+
+        public DBObject(ObjectId id, string name, string type, double x, double y, double z, double rx, double ry, double rz, double s, String[] info)
         {
+            this.tourID = id;
+            this.tourName = name;
+            this.objectType = type;
+            this.objLocX = x;
+            this.objLocY = y;
+            this.objLocZ = z;
+            this.roll = rx;
+            this.pitch = ry;
+            this.yaw = rz;
+            this.scale = s;
+            this.info = info;
             document = new BsonDocument
             {
                 {"tourID", id },
                 {"tourName", new BsonString(name) },
+                {"objectType", new BsonString(type) },
                 {"x-coordinate", new BsonString(x.ToString()) },
                 {"y-coordinate", new BsonString(y.ToString()) },
                 {"z-coordinate", new BsonString(z.ToString()) },
@@ -40,6 +54,7 @@ namespace MongoCom
             this.document = recievedDocument;
             this.tourID = (ObjectId)recievedDocument["tourID"];
             this.tourName = (string)recievedDocument["tourName"];
+            this.objectType = (string)recievedDocument["objectType"];
             this.objLocX = Convert.ToDouble(((string)recievedDocument["x-coordinate"]));
             this.objLocY = Convert.ToDouble(((string)recievedDocument["y-coordinate"]));
             this.objLocZ = Convert.ToDouble(((string)recievedDocument["z-coordinate"]));
@@ -48,7 +63,13 @@ namespace MongoCom
             this.yaw = Convert.ToDouble(((string)recievedDocument["yaw"]));
             this.scale = Convert.ToDouble(((string)recievedDocument["scale"]));
             //Need to convert this one to string array and test this 
-            //this.info = (BsonArray)recievedDocument["info"];
+            var temp = (BsonArray)recievedDocument["info"];
+            var bsonValues = temp.ToArray();
+            info = new string[bsonValues.Length];
+            for(int i = 0; i < bsonValues.Length; i ++)
+            {
+                info[i] = bsonValues[i].ToString();
+            }
         }
         public BsonDocument returnDoc()
         {
@@ -61,6 +82,10 @@ namespace MongoCom
         public string returnTourName()
         {
             return tourName;
+        }
+        public string returnObjType()
+        {
+            return objectType;
         }
         public double returnObjLocX()
         {
@@ -90,7 +115,7 @@ namespace MongoCom
         {
             return scale;
         }
-        private String[] returnInfo()
+        public String[] returnInfo()
         {
             return info;
         }
