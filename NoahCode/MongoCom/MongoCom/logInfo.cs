@@ -6,23 +6,22 @@ using System.Text;
 
 namespace MongoCom
 {
-    public class DBObject
+    class logInfo
     {
         private BsonDocument document;
-        public DBObject(ObjectId id, string name, float x, float y, float z, float rx, float ry, float rz, float s, String[] info)
+        public logInfo(ObjectId id, int height, float x, float y, float z, float rx, float ry, float rz, int stamp)
         {
             document = new BsonDocument
             {
                 {"tourID", id },
-                {"tourName", new BsonString(name) },
+                {"userID", ObjectId.GenerateNewId() },
+                {"userHeight", new BsonInt32(height) },
                 {"x-coordinate", new BsonString(x.ToString()) },
                 {"y-coordinate", new BsonString(y.ToString()) },
                 {"z-coordinate", new BsonString(z.ToString()) },
                 {"roll", new BsonString(rx.ToString()) },
                 {"pitch", new BsonString(ry.ToString()) },
-                {"yaw", new BsonString(rz.ToString()) },
-                {"Scale", new BsonString(s.ToString()) },
-                {"info", new BsonArray(info) }
+                {"yaw", new BsonString(rz.ToString()) }
             };
         }
         public BsonDocument returnDoc()
