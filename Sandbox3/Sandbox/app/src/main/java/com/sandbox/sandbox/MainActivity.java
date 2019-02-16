@@ -16,9 +16,18 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.math.Quaternion;
+import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
+
+//https://github.com/google-ar/arcore-android-sdk/issues/110
+/*
+    you can create an anchor at any pose
+
+ */
 
 /**
  * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
@@ -58,12 +67,22 @@ public class MainActivity extends AppCompatActivity {
                             toast.show();
                             return null;
                         });
+        //arFragment.getArSceneView().add
+
+        //https://heartbeat.fritz.ai/build-you-first-android-ar-app-with-arcore-and-sceneform-in-5-minutes-af02dc56efd6
+        arFragment.getArSceneView().getScene().addOnUpdateListener( frameTime -> {
+            arFragment.onUpdate(frameTime);
+            onUpdate();
+        });
 
         arFragment.setOnTapArPlaneListener(
                 (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
                     if (andyRenderable == null) {
+                        Log.i("joe","Andy Renderable == null");
                         return;
                     }
+
+                    CreateObject(hitResult, plane, motionEvent);
 
                     // Create the Anchor.
                     Anchor anchor = hitResult.createAnchor();
@@ -76,6 +95,38 @@ public class MainActivity extends AppCompatActivity {
                     andy.setRenderable(andyRenderable);
                     andy.select();
                 });
+    }
+
+    //called when the user creates an object
+    public void CreateObject(HitResult hitResult, Plane plane, MotionEvent motionEvent){
+        Log.i("joe", "Create Object");
+        Anchor anchor = hitResult.createAnchor();
+        float[] anchorX = anchor.getPose().getXAxis();
+        float[] anchorY = anchor.getPose().getYAxis();
+        float[] anchorZ = anchor.getPose().getZAxis();
+        Log.i("joe", "Anchor X: " + anchorX.toString());
+        Log.i("joe", "Anchor Y: " + anchorY.toString());
+        Log.i("joe", "Anchor Z: " + anchorZ.toString());
+
+    }
+
+
+    //called above..onUpdate for the scene
+    //local position would be of parent.. world is of root
+    private void onUpdate(){
+        Vector3 position =  arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+        Quaternion rotation =  arFragment.getArSceneView().getScene().getCamera().getWorldRotation();
+        String logmessage = "Camera Position - X: " + String.valueOf(position.x) + " Y: " + String.valueOf(position.y) + " Z: " + String.valueOf(position.z);
+        Log.i("OnUpdate", logmessage);
+
+    }
+
+
+    //zeros the camera's x,y,z
+    private void ZeroWorldPosition(){
+        Log.i("joe","camera is zeroed");
+        Vector3 v = new Vector3(0,0,0);
+        arFragment.getArSceneView().getScene().getCamera().setWorldPosition(v);
     }
 
     /**
