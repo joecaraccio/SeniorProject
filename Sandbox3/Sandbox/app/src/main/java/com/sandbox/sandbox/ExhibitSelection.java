@@ -1,6 +1,7 @@
 package com.sandbox.sandbox;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -39,6 +40,8 @@ public class ExhibitSelection extends AppCompatActivity {
 
     public void CreateNewTour(){
         Log.i("Joe", "Creating New Tour");
+        SwitchToScene(); //remove normally
+        /*
         CreateTourDialog();
         //if user entered a new name
         //begin creation process
@@ -46,6 +49,7 @@ public class ExhibitSelection extends AppCompatActivity {
             //create new tour
 
         }
+        */
     }
 
     public void CreateTourDialog(){
@@ -73,6 +77,11 @@ public class ExhibitSelection extends AppCompatActivity {
 
         builder.show();
 
+    }
+
+    public void SwitchToScene(){
+        Intent myIntent = new Intent(this, MainActivity.class);
+        startActivity(myIntent);
     }
 
 }
