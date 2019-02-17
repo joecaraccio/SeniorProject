@@ -31,6 +31,9 @@ dependencies {
 
     implementation 'org.mongodb:mongo-java-driver:3.0.3'
 
+    implementation 'com.sothree.slidinguppanel:library:3.4.0'
+
+
     // Sceneform
     implementation "com.google.ar.sceneform.ux:sceneform-ux:1.7.0"
     implementation "com.google.ar.sceneform:animation:1.7.0"

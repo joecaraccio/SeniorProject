@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private ArFragment arFragment;
     private ModelRenderable andyRenderable;
 
+    private FloatingActionButton fab;
+
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     // CompletableFuture requires api level 24
@@ -52,6 +56,16 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_ux);
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+
+        //floating action button used for opening toolbar
+        fab = (FloatingActionButton) findViewById(R.id.toolbarbutton);
+        fab.setAlpha(0.30f);
+        fab.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               FloatingActionPress();
+           }
+       });
 
         // When you build a Renderable, Sceneform loads its resources in the background while returning
         // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
@@ -107,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
         Log.i("joe", "Anchor X: " + anchorX.toString());
         Log.i("joe", "Anchor Y: " + anchorY.toString());
         Log.i("joe", "Anchor Z: " + anchorZ.toString());
+
+    }
+
+    //press on the floating action button
+    //open our toolbar
+    public void FloatingActionPress(){
 
     }
 
