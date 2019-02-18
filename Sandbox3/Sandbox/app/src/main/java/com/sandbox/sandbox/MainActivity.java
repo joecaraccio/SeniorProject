@@ -7,12 +7,18 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
@@ -43,6 +49,11 @@ public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
 
+    //Toolbox Variables
+    private RecyclerView tb_recyclerView;
+    private RecyclerView.Adapter tb_mAdapter;
+    private RecyclerView.LayoutManager tb_layoutManager;
+
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     // CompletableFuture requires api level 24
@@ -58,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
 
         //floating action button used for opening toolbar
+        /*
         fab = (FloatingActionButton) findViewById(R.id.toolbarbutton);
         fab.setAlpha(0.30f);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -66,6 +78,35 @@ public class MainActivity extends AppCompatActivity {
                FloatingActionPress();
            }
        });
+       */
+
+        //toolbar
+        tb_recyclerView = (RecyclerView) findViewById(R.id.toolbarlist);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        tb_recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        tb_layoutManager = new LinearLayoutManager(this);
+        tb_recyclerView.setLayoutManager(tb_layoutManager);
+
+        // specify an adapter (see also next example)
+        String[] t = new String[10];
+        t[0] = "j";
+        t[1] = "k";
+        t[2] = "k";
+        t[3] = "k";
+        t[4] = "k";
+        t[5] = "k";
+        t[6] = "k";
+        t[7] = "k";
+        t[8] = "k";
+        t[9] = "k";
+
+        tb_mAdapter = new MyAdapter(t);
+        tb_recyclerView.setAdapter(tb_mAdapter);
+
 
         // When you build a Renderable, Sceneform loads its resources in the background while returning
         // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
@@ -179,4 +220,54 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+}
+
+
+//Toolbox data adapter
+class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
+    private String[] mDataset;
+
+    // Complex data items may need more than one view per item, and
+    // you provide access to all the views for a data item in a view holder
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
+        // each data item is just a string in this case
+        public ConstraintLayout textView;
+        public MyViewHolder(ConstraintLayout v) {
+            super(v);
+            textView = v;
+        }
+    }
+
+    // Provide a suitable constructor (depends on the kind of dataset)
+    public MyAdapter(String[] myDataset) {
+        mDataset = myDataset;
+    }
+
+    // Create new views (invoked by the layout manager)
+    @Override
+    public MyAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
+                                                     int viewType) {
+        // create a new view
+        ConstraintLayout v = (ConstraintLayout) LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.toolbar_item, parent, false);
+
+        MyViewHolder vh = new MyViewHolder(v);
+        return vh;
+    }
+
+    // Replace the contents of a view (invoked by the layout manager)
+    @Override
+    public void onBindViewHolder(MyViewHolder holder, int position) {
+        // - get element from your dataset at this position
+        // - replace the contents of the view with that element
+
+        //holder.textView.setText(mDataset[position]);
+
+    }
+
+    // Return the size of your dataset (invoked by the layout manager)
+    @Override
+    public int getItemCount() {
+        return mDataset.length;
+    }
 }
