@@ -9,10 +9,12 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,13 +23,21 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
+import com.google.ar.core.Config;
+import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
+import com.google.ar.core.Pose;
+import com.google.ar.core.Session;
+import com.google.ar.core.Trackable;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.HitTestResult;
+import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
@@ -46,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ArFragment arFragment;
     private ModelRenderable andyRenderable;
+    private GestureDetector gestureDetector;
+    private Session session;
 
     private FloatingActionButton fab;
 
@@ -67,6 +79,19 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_ux);
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+        try{
+            Log.i("joe", "Create New Session");
+            session = new Session(this);
+            Config c = new Config(session);
+            c.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
+            session.configure(c);
+            Log.i("joe", "Supposibly Succesful");
+            //arFragment.upd
+
+        }catch(Exception e){
+            Log.i("joe", "Unable to Create Session");
+        }
+        arFragment.getArSceneView().setupSession(session);
 
         //floating action button used for opening toolbar
         /*
@@ -79,6 +104,10 @@ public class MainActivity extends AppCompatActivity {
            }
        });
        */
+
+        SlidingPaneLayout spl = (SlidingPaneLayout) findViewById(R.id.slidingplanelay);
+        spl.setEnabled(false); //disable slider
+
 
         //toolbar
         tb_recyclerView = (RecyclerView) findViewById(R.id.toolbarlist);
@@ -122,7 +151,36 @@ public class MainActivity extends AppCompatActivity {
                             toast.show();
                             return null;
                         });
-        //arFragment.getArSceneView().add
+
+
+        //Node infoNode = new Node();
+        //infoNode.setParent(this);
+
+        //Detects Gestures on Screen
+        gestureDetector = new GestureDetector(
+                this,
+        new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                onSingleTap(e);
+                return true;
+            }
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return true;
+            }
+        });
+
+
+
+        arFragment.getArSceneView().getScene().setOnTouchListener(
+                        (HitTestResult hitTestResult, MotionEvent event) -> {
+
+
+                            //detect tap on the scene
+                            return gestureDetector.onTouchEvent(event);
+                        });
 
         //https://heartbeat.fritz.ai/build-you-first-android-ar-app-with-arcore-and-sceneform-in-5-minutes-af02dc56efd6
         arFragment.getArSceneView().getScene().addOnUpdateListener( frameTime -> {
@@ -152,7 +210,81 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    //called when the user creates an object
+
+    //Tap on Screen
+    private void onSingleTap(MotionEvent tap) {
+        //tap.
+        Log.i("joe","onSingleTap");
+        //arFragment.getArSceneView().getScene().getCamera().get
+
+
+        //Create a Pose inview of the camera
+
+        Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,-1.0f)).extractTranslation();
+        Anchor anchor = session.createAnchor(currentPose);
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(arFragment.getArSceneView().getScene());
+        Node n1 = new Node();
+        n1.setEnabled(true);
+
+        ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
+                .thenAccept(
+                        (renderable) -> {
+                            n1.setRenderable(renderable);
+
+                            TextView textView = (TextView) renderable.getView();
+                            textView.setText("bron");
+
+                        })
+                .exceptionally(
+                        (throwable) -> {
+                            throw new AssertionError("Could not load plane card view.", throwable);
+                        });
+
+        anchorNode.addChild(n1);
+
+        //Enable our Adjuster Toolbar
+
+        /*
+        Frame frame = arFragment.getArSceneView().getArFrame();
+        if(frame != null){
+            Log.i("joe", "Lets try this frame stuff");
+            for( HitResult hit : frame.hitTest(tap)){
+                Log.i("joe", "-- For HitResult");
+                Trackable trackable = hit.getTrackable();
+                Anchor anchor = hit.createAnchor();
+                AnchorNode anchorNode = new AnchorNode(anchor);
+                anchorNode.setParent(arFragment.getArSceneView().getScene());
+
+                Node n1 = new Node();
+                n1.setEnabled(true);
+
+                ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
+                        .thenAccept(
+                        (renderable) -> {
+                            n1.setRenderable(renderable);
+
+                            TextView textView = (TextView) renderable.getView();
+                            textView.setText("bron");
+
+                        })
+                        .exceptionally(
+                                (throwable) -> {
+                                    throw new AssertionError("Could not load plane card view.", throwable);
+                                });
+
+                anchorNode.addChild(n1);
+                Log.i("joe","CREATED ANCHOR \n\n\n");
+
+            }
+
+
+        }
+        */
+
+    } //onTap end
+
+        //called when the user creates an object
     public void CreateObject(HitResult hitResult, Plane plane, MotionEvent motionEvent){
         Log.i("joe", "Create Object");
         Anchor anchor = hitResult.createAnchor();
