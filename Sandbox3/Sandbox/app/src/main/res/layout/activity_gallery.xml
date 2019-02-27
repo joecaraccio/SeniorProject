@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/gallery_activity_vertical_margin"
+    android:paddingLeft="@dimen/gallery_activity_horizontal_margin"
+    android:paddingRight="@dimen/gallery_activity_horizontal_margin"
+    android:paddingTop="@dimen/gallery_activity_vertical_margin"
+    tools:context="com.sandbox.sandbox.gallery.MainGallery">
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/imagegallery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+
+</RelativeLayout>

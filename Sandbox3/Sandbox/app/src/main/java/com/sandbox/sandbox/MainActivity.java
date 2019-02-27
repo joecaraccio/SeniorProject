@@ -353,7 +353,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void CP_Press_Image(){
         //Launch internal app image gallary
-
         Node n1 = GetFaceNode();
     }
 

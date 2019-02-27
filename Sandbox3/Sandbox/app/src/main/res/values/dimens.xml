@@ -1,3 +1,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+
+
+    <dimen name="gallery_activity_horizontal_margin">16dp</dimen>
+    <dimen name="gallery_activity_vertical_margin">16dp</dimen>
 </resources>
