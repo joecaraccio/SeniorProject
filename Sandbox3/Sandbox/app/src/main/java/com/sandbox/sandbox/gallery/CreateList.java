@@ -7,6 +7,7 @@ package com.sandbox.sandbox.gallery;
 public class CreateList {
     private String image_title;
     private Integer image_id;
+    private Integer listIndex;
 
     public String getImage_title() {
         return image_title;
@@ -22,5 +23,14 @@ public class CreateList {
 
     public void setImage_ID(Integer android_image_url) {
         this.image_id = android_image_url;
+    }
+
+
+    public void setImageIndex(Integer i){
+        this.listIndex = i;
+    }
+
+    public Integer getImageIndex(){
+        return this.listIndex;
     }
 }

@@ -1,6 +1,7 @@
 package com.sandbox.sandbox.gallery;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +12,17 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.sandbox.sandbox.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import static android.app.Activity.RESULT_CANCELED;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
 
     private ArrayList<CreateList> galleryList;
     private Context context;
+    public Context mContext;
 
     public GalleryAdapter(Context context, ArrayList<CreateList> galleryList) {
         this.galleryList = galleryList;
@@ -32,15 +37,17 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(GalleryAdapter.ViewHolder viewHolder, int i) {
-
+        viewHolder.index = galleryList.get(i).getImageIndex();
         viewHolder.title.setText(galleryList.get(i).getImage_title());
         viewHolder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
         viewHolder.img.setImageResource((galleryList.get(i).getImage_ID()));
-        //Picasso.with(context).load(galleryList.get(i).getImage_ID()).resize(240, 120).into(viewHolder.img);
+        Picasso.with(context).load(galleryList.get(i).getImage_ID()).resize(240, 120).into(viewHolder.img);
         viewHolder.img.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context,"Image",Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"Image Selected",Toast.LENGTH_SHORT).show();
+                ((MainGallery) mContext).Callback(viewHolder.index);
+
             }
         });
     }
@@ -53,6 +60,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     public class ViewHolder extends RecyclerView.ViewHolder{
         private TextView title;
         private ImageView img;
+        private int index;
         public ViewHolder(View view) {
             super(view);
 

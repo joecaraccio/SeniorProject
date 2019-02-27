@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TimeUtils;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -31,6 +32,8 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
+import com.google.ar.core.TrackingState;
+import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.HitTestResult;
@@ -44,6 +47,7 @@ import com.google.ar.sceneform.ux.TransformableNode;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sandbox.sandbox.gallery.MainGallery;
 
 import org.bson.BSONObject;
 
@@ -53,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 //https://github.com/google-ar/arcore-android-sdk/issues/110
 /*
@@ -67,6 +72,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
     public static final int PICK_IMAGE = 1;
+
+
+    //Activity Results
+    public static final int ImagePickResult = 1;
+
 
     private ArFragment arFragment;
     private ModelRenderable andyRenderable;
@@ -122,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+        /*
         try{
             Log.i("joe", "Create New Session");
             session = new Session(this);
@@ -135,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i("joe", "Unable to Create Session");
         }
         arFragment.getArSceneView().setupSession(session);
+        */
 
         //Remove that hand gesture early on...'plane discovery'
         arFragment.getPlaneDiscoveryController().hide();
@@ -192,10 +204,14 @@ public class MainActivity extends AppCompatActivity {
                         });
 
         //https://heartbeat.fritz.ai/build-you-first-android-ar-app-with-arcore-and-sceneform-in-5-minutes-af02dc56efd6
+
+        /*
         arFragment.getArSceneView().getScene().addOnUpdateListener( frameTime -> {
             arFragment.onUpdate(frameTime);
             onUpdate();
         });
+        */
+
 
         /*
         arFragment.setOnTapArPlaneListener(
@@ -252,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //Creates Node Faceing at Point
-    private Node GetFaceNode(){
+    private AnchorNode GetFaceNode(){
         //create a pose slightly in front of camera
         Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,-1.5f)).extractTranslation();
         Vector3 WorldPosition = GetCameraPosition();
@@ -264,15 +280,15 @@ public class MainActivity extends AppCompatActivity {
         Vector3 direction = Vector3.subtract(WorldPosition, ElementPosition);
         Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
 
-        Anchor anchor = session.createAnchor(currentPose);
+        Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(currentPose);
+        //Anchor anchor = session.createAnchor(currentPose);
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(arFragment.getArSceneView().getScene());
         Node n1 = new Node();
         n1.setEnabled(true);
         n1.setWorldRotation(lookRotation);
-
-        return n1;
-
+        anchorNode.addChild(n1);
+        return anchorNode;
     }
 
     private void ScreenPress(MotionEvent tap){
@@ -303,8 +319,8 @@ public class MainActivity extends AppCompatActivity {
         Log.i("joe", currentPose.getTranslation().toString());
         Log.i("joe", "$$$$\n\n");
 
-
-        Anchor anchor = session.createAnchor(currentPose);
+        Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(currentPose);
+        //Anchor anchor = session.createAnchor(currentPose);
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(arFragment.getArSceneView().getScene());
         Node n1 = new Node();
@@ -352,8 +368,74 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void CP_Press_Image(){
-        //Launch internal app image gallary
-        Node n1 = GetFaceNode();
+        Log.i("joe", "Image Button Pressed");
+
+        Log.i("joe","Image Gallery Opened");
+        //Launch internal app image gallery
+        Intent intent = new Intent(this, MainGallery.class);
+        startActivityForResult(intent, ImagePickResult);
+
+    }
+
+    //handles when we return from other activitys
+    //we check our global store file for a chancge
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("joe", "OnActivityResult");
+        //ResumeSession();
+        if (requestCode == ImagePickResult) {
+           Log.i("joe","ImagePickResult");
+           //Image has been picked
+            SetupImageComponent((int) data.getExtras().get("Selected Picture Index"));
+
+        }
+    }
+
+    //ensures our AR session has resumed
+    private void ResumeSession(){
+        Log.i("joe", "resuming session");
+        try{
+            arFragment.getArSceneView().getSession().pause();
+           arFragment.getArSceneView().getSession().resume();
+           //arFragment.getArSceneView().getArFrame().t
+        } catch (CameraNotAvailableException cae){
+            Log.i("joe", "Camera not Available Exception");
+        }
+        try{
+            TimeUnit.SECONDS.sleep(5);
+
+        } catch( Exception e ){
+
+        }
+
+    }
+
+
+    //Called from the result of our imagePicker
+    //passed information of where our image is
+    private void SetupImageComponent(int i){
+        Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
+
+        //Setup the Node
+        AnchorNode an = GetFaceNode();
+        Node n1 = an.getChildren().get(0);
+
+        ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
+                .thenAccept(
+                (renderable) -> {
+                    n1.setRenderable(renderable);
+
+                    TextView textView = (TextView) renderable.getView();
+                    textView.setText("bron");
+
+                })
+        .exceptionally(
+                (throwable) -> {
+                    throw new AssertionError("Could not load plane card view.", throwable);
+                });
+
+
+        //Add this Node to allow our adjuster tool to edit it
     }
 
 

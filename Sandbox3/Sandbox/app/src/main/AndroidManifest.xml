@@ -33,12 +33,20 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
         </activity>
 
         <activity
             android:name=".ExhibitSelection"
             android:label="@string/title_activity_exhibit_selection"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme"
+
+            >
 
 
         </activity>
@@ -46,13 +54,10 @@
 
         <activity
             android:name=".gallery.MainGallery"
-            android:label="@string/title_activity_exhibit_selection"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:label="Select Image"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme2">
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
         </activity>
     </application>
