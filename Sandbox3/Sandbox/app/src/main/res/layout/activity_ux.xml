@@ -4,53 +4,94 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/pink"
+
     tools:context=".MainActivity">
 
-    <android.support.v4.widget.SlidingPaneLayout
-        android:id="@+id/slidingplanelay"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+
+    <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
+        android:id="@+id/ux_fragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent" />
 
+    <LinearLayout
+        android:id="@+id/cp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="bottom|right"
+        android:layout_marginBottom="4dp"
+        >
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_image"
+            android:src="@drawable/baseline_add_photo_alternate_black_18dp"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:clickable="true"
+            />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_video"
+            android:src="@drawable/baseline_videocam_black_18dp"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:clickable="true"
+            />
 
-        <!--Toolbox -->
-        <RelativeLayout
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_slides"
+            android:src="@drawable/baseline_slideshow_black_18dp"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:clickable="true"
+             />
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/toolbarlist"
-                android:scrollbars="horizontal"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_audio"
+            android:src="@drawable/baseline_audiotrack_black_18dp"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:clickable="true"
+            />
 
-        </RelativeLayout>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_model"
+            android:src="@drawable/baseline_android_black_18dp"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:clickable="true"
+            />
 
-        <!--Camera View -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
-                android:id="@+id/ux_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-
-
-        </RelativeLayout>
-
-    </android.support.v4.widget.SlidingPaneLayout>
-
-
-
-
-
-
+    </LinearLayout>
 
 
 </FrameLayout>
+
+
+

@@ -3,7 +3,7 @@ package com.sandbox.sandbox.MongoCom;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
+import com.mongodb.DBObject;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -18,7 +18,7 @@ import static java.lang.System.in;
  */
 
 public class MongoCom {
-/*
+
     private ObjectId tourID;
     private String TourName;
     private double UserHeight;
@@ -33,7 +33,7 @@ public class MongoCom {
         dataBase = dbClient.getDatabase("holotours");
         this.TourName = tourName;
     }
-
+/*
     public List<String> showAllTourNames()
     {
         List<String> names = new ArrayList<>();

@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
@@ -41,6 +42,18 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
+import org.bson.BSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 //https://github.com/google-ar/arcore-android-sdk/issues/110
 /*
     you can create an anchor at any pose
@@ -53,6 +66,7 @@ import com.google.ar.sceneform.ux.TransformableNode;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
+    public static final int PICK_IMAGE = 1;
 
     private ArFragment arFragment;
     private ModelRenderable andyRenderable;
@@ -66,6 +80,21 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView.Adapter tb_mAdapter;
     private RecyclerView.LayoutManager tb_layoutManager;
 
+    //collection of scene nodes
+    private List<Anchor> SceneNodes;
+
+
+    boolean Press1 = false;
+
+    //controls whether we can see the buttons or not
+    boolean CreateMode = true;
+    private LinearLayout ControlPanel;
+
+    //UI Components Map
+    //maps our UI Components to variables
+    Map<String, Integer> ComponentsMap = new HashMap<String,Integer>();
+
+
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     // CompletableFuture requires api level 24
@@ -77,7 +106,21 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        LoadElements();
+
+
+
         setContentView(R.layout.activity_ux);
+
+        //Setup Control Panel
+        ControlPanel = (LinearLayout) findViewById(R.id.cp);
+        if(CreateMode == false){
+            ControlPanel.setVisibility(LinearLayout.GONE);
+        }else{
+            SetupControlPanelButtons();
+        }
+
+
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         try{
             Log.i("joe", "Create New Session");
@@ -93,48 +136,14 @@ public class MainActivity extends AppCompatActivity {
         }
         arFragment.getArSceneView().setupSession(session);
 
-        //floating action button used for opening toolbar
-        /*
-        fab = (FloatingActionButton) findViewById(R.id.toolbarbutton);
-        fab.setAlpha(0.30f);
-        fab.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               FloatingActionPress();
-           }
-       });
-       */
+        //Remove that hand gesture early on...'plane discovery'
+        arFragment.getPlaneDiscoveryController().hide();
+        arFragment.getPlaneDiscoveryController().setInstructionView(null);
 
-        SlidingPaneLayout spl = (SlidingPaneLayout) findViewById(R.id.slidingplanelay);
-        spl.setEnabled(false); //disable slider
+        //Nodes in Scene
+        SceneNodes = new ArrayList<Anchor>();
 
 
-        //toolbar
-        tb_recyclerView = (RecyclerView) findViewById(R.id.toolbarlist);
-
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        tb_recyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-        tb_layoutManager = new LinearLayoutManager(this);
-        tb_recyclerView.setLayoutManager(tb_layoutManager);
-
-        // specify an adapter (see also next example)
-        String[] t = new String[10];
-        t[0] = "j";
-        t[1] = "k";
-        t[2] = "k";
-        t[3] = "k";
-        t[4] = "k";
-        t[5] = "k";
-        t[6] = "k";
-        t[7] = "k";
-        t[8] = "k";
-        t[9] = "k";
-
-        tb_mAdapter = new MyAdapter(t);
-        tb_recyclerView.setAdapter(tb_mAdapter);
 
 
         // When you build a Renderable, Sceneform loads its resources in the background while returning
@@ -188,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
             onUpdate();
         });
 
+        /*
         arFragment.setOnTapArPlaneListener(
                 (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
                     if (andyRenderable == null) {
@@ -208,24 +218,102 @@ public class MainActivity extends AppCompatActivity {
                     andy.setRenderable(andyRenderable);
                     andy.select();
                 });
+                */
+    }
+
+    //puts interface elements into list
+    private void LoadElements(){
+        //Initalize Components Map...map all components to strings
+        ComponentsMap.put("test", R.layout.sandboxus_test);
+        ComponentsMap.put("image", R.layout.component_image);
+
+        /////////////////////////////////
     }
 
 
     //Tap on Screen
+    //creates an object on the view
     private void onSingleTap(MotionEvent tap) {
-        //tap.
-        Log.i("joe","onSingleTap");
-        //arFragment.getArSceneView().getScene().getCamera().get
+
+            ScreenPress(tap);
 
 
-        //Create a Pose inview of the camera
+    } //onTap end
 
+    //returns a pose that faces the user's current positon
+    private Pose GetFacePose(){
+        Log.i("joe", "GetFacePose");
+        //makeTranslation(tx,ty,tz)...offsets by  1 unit in the Z direction (forward)
         Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,-1.0f)).extractTranslation();
+        //Pose.makeT
+
+        return null;
+    }
+
+
+    //Creates Node Faceing at Point
+    private Node GetFaceNode(){
+        //create a pose slightly in front of camera
+        Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,-1.5f)).extractTranslation();
+        Vector3 WorldPosition = GetCameraPosition();
+        float tempCardLocation[] = currentPose.getTranslation();
+
+        Vector3 ElementPosition = new Vector3();
+        ElementPosition.set(tempCardLocation[0], tempCardLocation[1], tempCardLocation[2]);
+
+        Vector3 direction = Vector3.subtract(WorldPosition, ElementPosition);
+        Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
+
         Anchor anchor = session.createAnchor(currentPose);
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(arFragment.getArSceneView().getScene());
         Node n1 = new Node();
         n1.setEnabled(true);
+        n1.setWorldRotation(lookRotation);
+
+        return n1;
+
+    }
+
+    private void ScreenPress(MotionEvent tap){
+        Log.i("joe","onSingleTap");
+        //arFragment.getArSceneView().getScene().getCamera().get
+
+
+        //Create a Pose inview of the camera
+        Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,-1.0f)).extractTranslation();
+
+
+        Vector3 WorldPosition = GetCameraPosition();
+
+        float tempCardLocation[] = currentPose.getTranslation();
+        Vector3 ElementPosition = new Vector3();
+        ElementPosition.set(tempCardLocation[0], tempCardLocation[1], tempCardLocation[2]);
+
+        Vector3 direction = Vector3.subtract(WorldPosition, ElementPosition);
+        Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
+
+
+
+
+        Log.i("joe", currentPose.getRotationQuaternion().toString());
+        Log.i("joe", currentPose.getXAxis().toString());
+        Log.i("joe", currentPose.getYAxis().toString());
+        Log.i("joe", currentPose.getZAxis().toString());
+        Log.i("joe", currentPose.getTranslation().toString());
+        Log.i("joe", "$$$$\n\n");
+
+
+        Anchor anchor = session.createAnchor(currentPose);
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(arFragment.getArSceneView().getScene());
+        Node n1 = new Node();
+        n1.setEnabled(true);
+        n1.setWorldRotation(lookRotation);
+
+        //Add to Scene Object collection
+        //Add to Datbase
+        this.CreateObject(currentPose);
 
         ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
                 .thenAccept(
@@ -242,50 +330,105 @@ public class MainActivity extends AppCompatActivity {
                         });
 
         anchorNode.addChild(n1);
+        SceneNodes.add(anchor);
+    }
 
-        //Enable our Adjuster Toolbar
 
-        /*
-        Frame frame = arFragment.getArSceneView().getArFrame();
-        if(frame != null){
-            Log.i("joe", "Lets try this frame stuff");
-            for( HitResult hit : frame.hitTest(tap)){
-                Log.i("joe", "-- For HitResult");
-                Trackable trackable = hit.getTrackable();
-                Anchor anchor = hit.createAnchor();
-                AnchorNode anchorNode = new AnchorNode(anchor);
-                anchorNode.setParent(arFragment.getArSceneView().getScene());
+    //User Interface Buttons
+    private void CP_Press_Audio(){
 
-                Node n1 = new Node();
-                n1.setEnabled(true);
+    }
 
-                ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
-                        .thenAccept(
-                        (renderable) -> {
-                            n1.setRenderable(renderable);
+    private void CP_Press_Video(){
 
-                            TextView textView = (TextView) renderable.getView();
-                            textView.setText("bron");
+    }
 
-                        })
-                        .exceptionally(
-                                (throwable) -> {
-                                    throw new AssertionError("Could not load plane card view.", throwable);
-                                });
+    private void CP_Press_Slideshow(){
 
-                anchorNode.addChild(n1);
-                Log.i("joe","CREATED ANCHOR \n\n\n");
+    }
 
+    private void CP_Press_Model(){
+
+    }
+
+    private void CP_Press_Image(){
+        //Launch internal app image gallary
+
+        Node n1 = GetFaceNode();
+    }
+
+
+    //sets up the buttons on click methods bottom right
+    private void SetupControlPanelButtons(){
+        FloatingActionButton cp_audio_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_audio);
+        cp_audio_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                CP_Press_Audio();
             }
+        });
+
+        FloatingActionButton cp_video_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_video);
+        cp_video_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                CP_Press_Video();
+            }
+        });
+
+        FloatingActionButton cp_slideshow_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_slides);
+        cp_slideshow_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                CP_Press_Slideshow();
+            }
+        });
+
+        FloatingActionButton cp_model_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_model);
+        cp_model_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                CP_Press_Model();
+            }
+        });
+
+        FloatingActionButton cp_image_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_image);
+        cp_image_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                CP_Press_Image();
+            }
+        });
+
+    }
 
 
-        }
-        */
 
-    } //onTap end
+    //logs where our created object is
+    public void CreateObject(Pose objectPose){
+        float RotationFloat[] = objectPose.getRotationQuaternion();
+        float X_Axis[] = objectPose.getXAxis();
+        float Y_Axis[] = objectPose.getYAxis();
+        float Z_Axis[] = objectPose.getZAxis();
+
+        BasicDBObject obj = new BasicDBObject();
+        obj.append("Rotation_", 0);
+
+    }
+
+
+    //loads device image picker, allows the user to select an image from gallary
+    public void SelectImage(){
+        Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        getIntent.setType("image/*");
+
+        Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        pickIntent.setType("image/*");
+
+        Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
+
+        startActivityForResult(chooserIntent, PICK_IMAGE);
+    }
+
 
         //called when the user creates an object
-    public void CreateObject(HitResult hitResult, Plane plane, MotionEvent motionEvent){
+    public void CreateObject1(HitResult hitResult, Plane plane, MotionEvent motionEvent){
         Log.i("joe", "Create Object");
         Anchor anchor = hitResult.createAnchor();
         float[] anchorX = anchor.getPose().getXAxis();
@@ -303,6 +446,17 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //returns camera position
+    private Vector3 GetCameraPosition(){
+        Vector3 position =  arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+        return position;
+    }
+
+    //returns camera quanternion
+    private Quaternion GetCameraRotation(){
+        Quaternion rotation =  arFragment.getArSceneView().getScene().getCamera().getWorldRotation();
+        return rotation;
+    }
 
     //called above..onUpdate for the scene
     //local position would be of parent.. world is of root
