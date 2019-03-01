@@ -381,6 +381,13 @@ public class MainActivity extends AppCompatActivity {
     //we check our global store file for a chancge
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try{
+            arFragment.getArSceneView().getSession().resume();
+
+        }catch(Exception e){
+
+        }
+
         Log.i("joe", "OnActivityResult");
         //ResumeSession();
         if (requestCode == ImagePickResult) {
