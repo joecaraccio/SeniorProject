@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pink"
-
+    android:gravity="bottom"
     tools:context=".MainActivity">
 
 
@@ -15,31 +14,7 @@
         android:layout_height="match_parent" />
 
 
-    <LinearLayout
-        android:id="@+id/cp1"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:gravity="bottom|left"
-        android:layout_marginBottom="4dp"
-        >
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/cp_image2"
-            android:src="@drawable/baseline_add_photo_alternate_black_18dp"
-            app:backgroundTint="@color/fabbg"
-            app:fabSize="mini"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="3dp"
-            android:layout_marginRight="3dp"
-            android:clickable="true"
-            />
-
-
-
-    </LinearLayout>
 
 
     <LinearLayout
@@ -117,6 +92,8 @@
             />
 
     </LinearLayout>
+
+
 
 
 </FrameLayout>

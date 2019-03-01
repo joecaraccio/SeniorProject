@@ -2,40 +2,37 @@ package com.sandbox.sandbox;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.TimeUtils;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
-import com.google.ar.core.Config;
-import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
-import com.google.ar.core.Trackable;
-import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.sceneform.AnchorNode;
-import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.HitTestResult;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
@@ -43,20 +40,17 @@ import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
-import com.google.ar.sceneform.ux.TransformableNode;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
+import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
+import com.sandbox.sandbox.gallery.CreateList;
 import com.sandbox.sandbox.gallery.MainGallery;
-
-import org.bson.BSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 //https://github.com/google-ar/arcore-android-sdk/issues/110
@@ -73,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     private static final double MIN_OPENGL_VERSION = 3.0;
     public static final int PICK_IMAGE = 1;
 
+
+    final Context context = this;
 
     //Activity Results
     public static final int ImagePickResult = 1;
@@ -93,6 +89,11 @@ public class MainActivity extends AppCompatActivity {
     //collection of scene nodes
     private List<Anchor> SceneNodes;
 
+    //Android Screen Size Information
+    int ScreenWidth = 0;
+    int ScreenHeight = 0;
+    int dialogWindowWidth = 0;
+    int dialogWindowHeight = 0;
 
     boolean Press1 = false;
 
@@ -104,6 +105,17 @@ public class MainActivity extends AppCompatActivity {
     //maps our UI Components to variables
     Map<String, Integer> ComponentsMap = new HashMap<String,Integer>();
 
+
+    //Tool Dialogs
+    Dialog imageDialog = null;
+    Dialog videoDialog = null;
+    Dialog soundDialog = null;
+    Dialog slideShowDialog = null;
+    Dialog modelShowDialog = null;
+
+
+    //place holder for music dialog
+    int AudioPoint = 0;
 
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -156,7 +168,14 @@ public class MainActivity extends AppCompatActivity {
         SceneNodes = new ArrayList<Anchor>();
 
 
-
+        //
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        ScreenHeight = displayMetrics.heightPixels;
+        ScreenWidth = displayMetrics.widthPixels;
+        //set dialog sizes
+        dialogWindowHeight = (int) (ScreenHeight * 0.85f);
+        dialogWindowWidth = (int) (ScreenWidth * 0.85f);
 
         // When you build a Renderable, Sceneform loads its resources in the background while returning
         // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
@@ -250,8 +269,8 @@ public class MainActivity extends AppCompatActivity {
     //Tap on Screen
     //creates an object on the view
     private void onSingleTap(MotionEvent tap) {
-
-            ScreenPress(tap);
+            //diabled for now!
+            //ScreenPress(tap);
 
 
     } //onTap end
@@ -270,7 +289,8 @@ public class MainActivity extends AppCompatActivity {
     //Creates Node Faceing at Point
     private AnchorNode GetFaceNode(){
         //create a pose slightly in front of camera
-        Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,-1.5f)).extractTranslation();
+        float distanceFromFace = -2.5f;
+        Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,distanceFromFace)).extractTranslation();
         Vector3 WorldPosition = GetCameraPosition();
         float tempCardLocation[] = currentPose.getTranslation();
 
@@ -335,6 +355,7 @@ public class MainActivity extends AppCompatActivity {
                 .thenAccept(
                         (renderable) -> {
                             n1.setRenderable(renderable);
+
 
                             TextView textView = (TextView) renderable.getView();
                             textView.setText("bron");
@@ -417,6 +438,54 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void SetupSoundComponent(int i){
+        Log.i("joe", "Setup Sound Component for index: " + Integer.toString(i));
+
+        //Setup the Node
+        AnchorNode an = GetFaceNode();
+        Node n1 = an.getChildren().get(0);
+
+        ViewRenderable.builder().setView(this, R.layout.sandbox_ui_sound).build()
+                .thenAccept(
+                        (renderable) -> {
+                            n1.setRenderable(renderable);
+                            View view = renderable.getView();
+                            int soundID = ResourceLink.soundID[i];
+                            final MediaPlayer mp = MediaPlayer.create(this, soundID);
+                            view.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Log.i("joe", "Music Player Component Pressed - " + Integer.toString(i));
+                                    //toggle music player
+                                    if(mp.isPlaying() == false){
+                                        Log.i("joe", "Music Player is False.. Start it");
+                                        //check where we are on current audio duration
+                                        if(AudioPoint == 0){
+                                            mp.seekTo(0);
+                                        } else if( AudioPoint < mp.getDuration()){
+                                            mp.seekTo(AudioPoint);
+                                        } else{
+                                            //restart the clip
+                                            mp.seekTo(0);
+                                        }
+
+                                        mp.start();
+                                    }else{
+                                        Log.i("joe", "Music Playing is True.. Stop it");
+                                        mp.pause();
+                                        AudioPoint = mp.getCurrentPosition();
+                                    }
+                                }
+                            });
+
+                        })
+                .exceptionally(
+                        (throwable) -> {
+                            throw new AssertionError("Could not load plane card view.", throwable);
+                        });
+
+    }
+
 
     //Called from the result of our imagePicker
     //passed information of where our image is
@@ -427,13 +496,15 @@ public class MainActivity extends AppCompatActivity {
         AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
 
-        ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
+        ViewRenderable.builder().setView(this, R.layout.sandbox_ui_image).build()
                 .thenAccept(
                 (renderable) -> {
                     n1.setRenderable(renderable);
-
-                    TextView textView = (TextView) renderable.getView();
-                    textView.setText("bron");
+                    View view = renderable.getView();
+                    ImageView im = view.findViewById(R.id.imageview1);
+                    //set image to place
+                    im.setImageResource(ResourceLink.image_ids[i]);
+                    //
 
                 })
         .exceptionally(
@@ -451,7 +522,7 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton cp_audio_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_audio);
         cp_audio_fab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CP_Press_Audio();
+                SoundSelectorDialog();
             }
         });
 
@@ -479,7 +550,8 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton cp_image_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_image);
         cp_image_fab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CP_Press_Image();
+                ImageSelectorDialog();
+                //CP_Press_Image();
             }
         });
 
@@ -594,6 +666,160 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    //dialog views
+
+    private void ModelSelectorDialog(){
+        modelShowDialog = new Dialog(context);
+        View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
+        modelShowDialog.setContentView(convertView);
+        modelShowDialog.setTitle("Select Video");
+
+
+        RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
+
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 3);
+        rv.setLayoutManager(layoutManager);
+        rv.setHasFixedSize(true);
+
+        //show the dialog
+        modelShowDialog.show();
+        //resize dialog
+        modelShowDialog.getWindow().setLayout(dialogWindowWidth, dialogWindowHeight);
+
+    }
+
+    private void VideoSelectorDialog() {
+        videoDialog = new Dialog(context);
+
+        View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
+        imageDialog.setContentView(convertView);
+        imageDialog.setTitle("Select Video");
+
+
+        RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
+
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 3);
+        rv.setLayoutManager(layoutManager);
+        rv.setHasFixedSize(true);
+
+        //form our list
+        ArrayList<String> SoundNames = new ArrayList<>();
+        for(int i = 0; i< ResourceLink.soundNames.length; i++) {
+            SoundNames.add(ResourceLink.soundNames[i]);
+        }
+
+        SoundGalleryAdapter sga;
+        sga = new SoundGalleryAdapter(context,SoundNames);
+        rv.setAdapter(sga);
+
+
+        //show the dialog
+        videoDialog.show();
+        //resize dialog
+        videoDialog.getWindow().setLayout(dialogWindowWidth, dialogWindowHeight);
+    }
+
+    private void SoundSelectorDialog(){
+        soundDialog = new Dialog(context);
+
+        View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
+        soundDialog.setContentView(convertView);
+        soundDialog.setTitle("Select Video");
+
+
+        RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
+
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 1);
+        rv.setLayoutManager(layoutManager);
+        rv.setHasFixedSize(true);
+
+        //form our list
+        ArrayList<String> SoundNames = new ArrayList<>();
+        for(int i = 0; i< ResourceLink.soundNames.length; i++) {
+            SoundNames.add(ResourceLink.soundNames[i]);
+        }
+
+        SoundGalleryAdapter sga;
+        sga = new SoundGalleryAdapter(context,SoundNames);
+        rv.setAdapter(sga);
+
+        //show the dialog
+        soundDialog.show();
+        //resize dialog
+        soundDialog.getWindow().setLayout(dialogWindowWidth, dialogWindowHeight);
+    }
+
+    //Creates a dialog with a recycler view which allows you to select an image
+    private void ImageSelectorDialog(){
+        imageDialog = new Dialog(context);
+
+        View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
+        imageDialog.setContentView(convertView);
+        imageDialog.setTitle("Select Image");
+
+
+        RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
+
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 3);
+        rv.setLayoutManager(layoutManager);
+        rv.setHasFixedSize(true);
+
+        // data to populate the RecyclerView with list
+        ArrayList<Integer> ImageIDS = new ArrayList<>();
+        for(int i = 0; i< ResourceLink.image_ids.length; i++) {
+            ImageIDS.add(ResourceLink.image_ids[i]);
+        }
+
+
+        ImageGalleryAdapter adapter;
+        adapter = new ImageGalleryAdapter(context,ImageIDS);
+        rv.setAdapter(adapter);
+
+        //show the dialog
+        imageDialog.show();
+        //resize dialog
+        imageDialog.getWindow().setLayout(dialogWindowWidth, dialogWindowHeight);
+    }
+
+    //called when an imageview is pressed
+    public void ImageDialogCallback(Integer i){
+        Log.i("joe", "Image Callback has been Pressed!");
+        //verify dialog view is open
+        if(imageDialog != null && imageDialog.isShowing() == true){
+            imageDialog.dismiss();
+            Log.i("joe", "time to create an image view");
+            SetupImageComponent(i);
+
+        }
+    }
+
+    //called when an imageview is pressed
+    public void SoundDialogCallback(Integer i){
+        Log.i("joe", "Sound Callback has been Pressed!");
+        //verify dialog view is open
+        if(soundDialog != null && soundDialog.isShowing() == true){
+            soundDialog.dismiss();
+            Log.i("joe", "time to create a sound view");
+            SetupSoundComponent(i);
+        }
+    }
+
+
+    private ArrayList<CreateList> prepareDataImages(){
+
+        ArrayList<CreateList> theimage = new ArrayList<>();
+        for(int i = 0; i< ResourceLink.image_titles.length; i++){
+            CreateList createList = new CreateList();
+            createList.setImage_title(ResourceLink.image_titles[i]);
+            createList.setImage_ID(ResourceLink.image_ids[i]);
+            createList.setImageIndex(i);
+            theimage.add(createList);
+        }
+        return theimage;
+    }
+
+
+
 }
 
 
@@ -645,3 +871,21 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         return mDataset.length;
     }
 }
+
+/*
+
+// set the custom dialog components - text, image and button
+        TextView text = (TextView) dialog.findViewById(R.id.text);
+        text.setText("Android custom dialog example!");
+        ImageView image = (ImageView) dialog.findViewById(R.id.image);
+        image.setImageResource(R.drawable.ic_launcher_background);
+
+        Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+        // if button is clicked, close the custom dialog
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+ */
