@@ -9,11 +9,14 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -22,10 +25,15 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
@@ -46,6 +54,7 @@ import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
 import com.sandbox.sandbox.gallery.MainGallery;
+import com.sandbox.sandbox.tools.SoundObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,9 +68,7 @@ import java.util.concurrent.TimeUnit;
 
  */
 
-/**
- * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
- */
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
@@ -99,11 +106,39 @@ public class MainActivity extends AppCompatActivity {
 
     //controls whether we can see the buttons or not
     boolean CreateMode = true;
+
+
+
+    //Showed when an object is placed
+    boolean AdjusterPanelActive = false;
+
+    //Adjuster Panel
+    private EditText edit_pos_x;
+    private EditText edit_pos_y;
+    private EditText edit_pos_z;
+    private EditText edit_height;
+    private EditText edit_width;
+
+    private Button edit_button_save;
+    private Button edit_button_delete;
+
+
+    //currently selected node
+    private Node selectedNode = null;
+    private AnchorNode selectedAnchorNode = null;
+
+    //active view.. used for resizing
+    private View nodeView = null;
+
     private LinearLayout ControlPanel;
+    private LinearLayout AdjustorPanel;
 
     //UI Components Map
     //maps our UI Components to variables
     Map<String, Integer> ComponentsMap = new HashMap<String,Integer>();
+
+
+    private MediaPlayer global_mediaplayer = null;
 
 
     //Tool Dialogs
@@ -112,6 +147,8 @@ public class MainActivity extends AppCompatActivity {
     Dialog soundDialog = null;
     Dialog slideShowDialog = null;
     Dialog modelShowDialog = null;
+
+    private List<SoundObject> SoundObjects;
 
 
     //place holder for music dialog
@@ -131,8 +168,24 @@ public class MainActivity extends AppCompatActivity {
         LoadElements();
 
 
+        //ensure we hide keyboard
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+
+
 
         setContentView(R.layout.activity_ux);
+
+        AdjustorPanel = (LinearLayout) findViewById(R.id.adjusterpanel);
+        AdjustorPanel.setVisibility(LinearLayout.GONE); //hide to start
+        AdjusterPanelActive = false;
+        SetupAdjustorPanel();
+
+        //List of sound Objects
+        this.SoundObjects = new ArrayList<>();
+
+
+
 
         //Setup Control Panel
         ControlPanel = (LinearLayout) findViewById(R.id.cp);
@@ -224,6 +277,12 @@ public class MainActivity extends AppCompatActivity {
 
         //https://heartbeat.fritz.ai/build-you-first-android-ar-app-with-arcore-and-sceneform-in-5-minutes-af02dc56efd6
 
+        //OnUpdate -
+        arFragment.getArSceneView().getScene().addOnUpdateListener( frameTime -> {
+            arFragment.onUpdate(frameTime);
+            onUpdate();
+        });
+
         /*
         arFragment.getArSceneView().getScene().addOnUpdateListener( frameTime -> {
             arFragment.onUpdate(frameTime);
@@ -265,6 +324,181 @@ public class MainActivity extends AppCompatActivity {
         /////////////////////////////////
     }
 
+    //corrects state issues..ensure adjustor panel is open
+    private void verifyAdjustorPanel(){
+        if(AdjustorPanel.getVisibility() == LinearLayout.GONE){
+            AdjusterPanelActive = false;
+            ToggleAdjustorPanel();
+        }
+    }
+
+    //show and hide adjustor panels
+    private void ToggleAdjustorPanel(){
+        /*
+        if(AdjusterPanelActive == true){
+            AdjusterPanelActive = false;
+            AdjustorPanel.setVisibility(LinearLayout.GONE);
+        }else{
+            AdjusterPanelActive = true;
+            AdjustorPanel.setVisibility(LinearLayout.VISIBLE);
+        }
+        */
+    }
+
+    //Sets up Elements controlling the AdjustorPanel
+    private void SetupAdjustorPanel(){
+        edit_pos_x = (EditText) findViewById(R.id.et_pos_x);
+        edit_pos_y = (EditText) findViewById(R.id.et_pos_y);
+        edit_pos_z = (EditText) findViewById(R.id.et_pos_z);
+        edit_height = (EditText) findViewById(R.id.et_height);
+        edit_width = (EditText) findViewById(R.id.et_width);
+        edit_button_save = (Button) findViewById(R.id.node_save_button);
+        edit_button_delete = (Button) findViewById(R.id.node_delete_button);
+
+
+        //Save Button On Click Listener
+        edit_button_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("joe","Click1");
+                EditButtonSaveClick();
+            }
+        });
+
+        //Delete Button On Click Listener
+        edit_button_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("joe","Click2");
+                EditButtonDeleteClick();
+            }
+        });
+
+
+    }
+
+    private void EditButtonSaveClick(){
+        if(selectedNode != null && AdjusterPanelActive == true){
+
+            ToggleAdjustorPanel();
+            //done with this.. clear variable
+            selectedNode = null;
+        }
+    }
+
+    private void EditButtonDeleteClick(){
+        if(selectedNode != null && AdjusterPanelActive == true){
+            //remove from scene
+            DeleteNode(selectedAnchorNode);
+
+
+            ToggleAdjustorPanel();
+            //make as null
+            selectedNode = null;
+
+        }
+    }
+
+
+    //
+    private void DeleteNode(AnchorNode an){
+        //an.setEnabled(false);
+        //an.getAnchor().detach();
+        //selectedNode = null;
+        //selectedAnchorNode = null;
+    }
+
+    private void SetNodeAdjustor(Node n){
+        selectedNode = n;
+
+
+        SetAdjustorPos(n.getWorldPosition().x, n.getWorldPosition().y, n.getWorldPosition().z);
+
+        //if renderable has a Height and Width
+        if(nodeView != null){
+            Log.i("joe ","Setting Node View");
+            int h = nodeView.getLayoutParams().height;
+            int w = nodeView.getLayoutParams().width;
+            SetAdjustDimensions(h, w);
+        }else{
+            Log.i("joe","No Node View WTF");
+        }
+
+
+
+
+        ToggleAdjustorPanel();
+        verifyAdjustorPanel();
+
+    }
+
+    private void SetAdjustorPos(float x, float y, float z){
+        edit_pos_x.setText(Float.toString(x));
+        edit_pos_z.setText(Float.toString(z));
+        edit_pos_y.setText(Float.toString(y));
+
+        //clear focus
+        SetupFocus(edit_pos_x);
+        SetupFocus(edit_pos_z);
+        SetupFocus(edit_pos_y);
+        SetupFocus(edit_width);
+        SetupFocus(edit_height);
+
+
+
+
+    }
+
+    //set height and width
+    private void SetAdjustDimensions(int height, int width){
+        edit_width.setText(Integer.toString(width));
+        edit_height.setText(Integer.toString(height));
+        SetupFocus(edit_width);
+        SetupFocus(edit_height);
+
+        //Text Change Responders
+        edit_height.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //New Text Values, lets convert to ints and set them
+                UpdateViewHeight(10);
+
+            }
+        });
+
+
+    }
+
+
+    //update a view renderables height
+    private void UpdateViewHeight(int h){
+        if(nodeView != null){
+            ViewGroup.LayoutParams params = nodeView.getLayoutParams();
+            params.height = h;
+            nodeView.requestLayout();
+        }
+    }
+
+
+    //ensures intially focus is cleared
+    private void SetupFocus(EditText t){
+        t.setFocusableInTouchMode(false);
+        t.setFocusable(false);
+        t.setFocusableInTouchMode(true);
+        t.setFocusable(true);
+    }
+
 
     //Tap on Screen
     //creates an object on the view
@@ -301,6 +535,7 @@ public class MainActivity extends AppCompatActivity {
         Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
 
         Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(currentPose);
+
         //Anchor anchor = session.createAnchor(currentPose);
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(arFragment.getArSceneView().getScene());
@@ -308,9 +543,12 @@ public class MainActivity extends AppCompatActivity {
         n1.setEnabled(true);
         n1.setWorldRotation(lookRotation);
         anchorNode.addChild(n1);
+
         return anchorNode;
     }
 
+
+    //not currently used
     private void ScreenPress(MotionEvent tap){
         Log.i("joe","onSingleTap");
         //arFragment.getArSceneView().getScene().getCamera().get
@@ -438,13 +676,29 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    //Adds sound to list
+    private void AddSoundLocation(Node n, int index){
+        float y = n.getWorldPosition().y;
+        float x = n.getWorldPosition().x;
+        float z = n.getWorldPosition().z;
+        Log.i("joe", "Add Sound to location " + Float.toString(x) + "-" + Float.toString(y) + "-" + Float.toString(z));
+        SoundObject so = new SoundObject(n.getWorldPosition(), index);
+
+        this.SoundObjects.add(so);
+
+
+    }
+
     private void SetupSoundComponent(int i){
         Log.i("joe", "Setup Sound Component for index: " + Integer.toString(i));
 
         //Setup the Node
         AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
+        this.AddSoundLocation(n1, i);
 
+        /*
         ViewRenderable.builder().setView(this, R.layout.sandbox_ui_sound).build()
                 .thenAccept(
                         (renderable) -> {
@@ -483,6 +737,7 @@ public class MainActivity extends AppCompatActivity {
                         (throwable) -> {
                             throw new AssertionError("Could not load plane card view.", throwable);
                         });
+        */
 
     }
 
@@ -500,7 +755,23 @@ public class MainActivity extends AppCompatActivity {
                 .thenAccept(
                 (renderable) -> {
                     n1.setRenderable(renderable);
+
                     View view = renderable.getView();
+                    //this.nodeView = view;
+                    LinearLayout ll = (LinearLayout) view;
+                    ViewGroup.LayoutParams params = ll.getLayoutParams();
+                    //params.height = 1000;
+                    params.width = 600;
+                    ll.setLayoutParams(params);
+
+
+
+                    //int h = nodeView.getLayoutParams().height;
+                    //int w = nodeView.getLayoutParams().width;
+                    //SetAdjustDimensions(h, w);
+
+
+
                     ImageView im = view.findViewById(R.id.imageview1);
                     //set image to place
                     im.setImageResource(ResourceLink.image_ids[i]);
@@ -514,6 +785,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Add this Node to allow our adjuster tool to edit it
+        //SetNodeAdjustor(n1);
+        //selectedAnchorNode = an;
     }
 
 
@@ -625,6 +898,140 @@ public class MainActivity extends AppCompatActivity {
         Quaternion rotation =  arFragment.getArSceneView().getScene().getCamera().getWorldRotation();
         String logmessage = "Camera Position - X: " + String.valueOf(position.x) + " Y: " + String.valueOf(position.y) + " Z: " + String.valueOf(position.z);
         Log.i("OnUpdate", logmessage);
+
+        //Track if we are in audio range
+        this.TrackAudioRange();
+
+
+    }
+
+
+    //calculates the distance between two vectors
+    //ignnoring the Y plane is this case
+    private float CalculateDistance(Vector3 p1, Vector3 p2){
+        float x1 = (p1.x - p2.x) * (p1.x - p2.x);
+        float x2 = (p1.z - p2.z) * (p1.z - p2.z);
+        float x3 = x1 + x2;
+        float f = (float) Math.sqrt(x3);
+        return f;
+    }
+/*
+
+Log.i("joe", "Music Player is False.. Start it");
+    //check where we are on current audio duration
+                                        if(AudioPoint == 0){
+        mp.seekTo(0);
+    } else if( AudioPoint < mp.getDuration()){
+        mp.seekTo(AudioPoint);
+    } else{
+        //restart the clip
+        mp.seekTo(0);
+    }
+
+                                        mp.start();
+}else{
+        Log.i("joe", "Music Playing is True.. Stop it");
+        mp.pause();
+        AudioPoint = mp.getCurrentPosition();
+        */
+
+
+    //plays the closest audio that we are currently in range of
+    private void TrackAudioRange(){
+        //NEED TO ADD IN RANGFE
+        //add button for play mode
+
+        boolean ChangingTrack = false;
+        Vector3 UserPositon =  arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+
+
+        //must also be within this range
+        float DistanceThreshold = 2.0f;
+
+        int closestIndex = -1;
+        float closeDistance = 0;
+
+        int currentPlaying = -1;
+
+        Log.i("joe", "");
+        Log.i("joe", "Track Audio Object");
+        for(int i = 0; i < this.SoundObjects.size(); i++) {
+            SoundObject sotemp = this.SoundObjects.get(i);
+            float Distance = CalculateDistance(UserPositon, sotemp.SoundPosition);
+
+            Log.i("joe", "Looping Sound " + Integer.toString(i) + " Distance: " + Float.toString(Distance));
+
+
+            //if within playable range
+            if(Distance <= DistanceThreshold){
+                if (closestIndex == -1) {
+                    closestIndex = i;
+                    closeDistance = Distance;
+                } else {
+                    //Only change if we are closer
+                    if (Distance < closeDistance) {
+                        closestIndex = i;
+                        closeDistance = Distance;
+                    }
+                }
+            }
+
+
+
+            //check if this is currently playing
+            if(sotemp.playing == true){
+                currentPlaying = i;
+            }
+
+
+        }
+
+        //Okay.. we have our closest.. if its not playing lets play it
+        //quickly make sure the previous isn't playing
+        if(currentPlaying != closestIndex && closestIndex != -1){
+            Log.i("joe", "starting a new track");
+            if(currentPlaying != -1 && global_mediaplayer != null){
+                //we are also pausing an old track
+                SoundObject sotemp = this.SoundObjects.get(currentPlaying);
+                sotemp.playing = false;
+                global_mediaplayer.pause();
+                sotemp.duration = global_mediaplayer.getCurrentPosition();
+
+            }
+
+
+
+            SoundObject so = this.SoundObjects.get(closestIndex);
+            int soundID = ResourceLink.soundID[so.SoundIndex];
+            global_mediaplayer = MediaPlayer.create(getApplicationContext(), soundID);
+
+            //check if we are resuming
+            if(so.duration != -1){
+                //check if time is still left
+                if( so.duration < global_mediaplayer.getDuration()) {
+                    global_mediaplayer.seekTo(so.duration);
+                }else{
+                    //lets restart
+                    global_mediaplayer.seekTo(0);
+
+                }
+
+            }
+            global_mediaplayer.start();
+            so.playing = true;
+
+        }else if(closestIndex == -1 && currentPlaying != -1){
+            //we havent't found a replacement but we are out of range of previous
+            if(global_mediaplayer != null){
+                global_mediaplayer.pause();
+                this.SoundObjects.get(currentPlaying).playing = false;
+                this.SoundObjects.get(currentPlaying).duration = global_mediaplayer.getCurrentPosition();
+            }
+        }
+
+
+
+
 
     }
 

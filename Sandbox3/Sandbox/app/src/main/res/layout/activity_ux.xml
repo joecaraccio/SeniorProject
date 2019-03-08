@@ -17,6 +17,273 @@
 
 
 
+
+
+    <LinearLayout
+        android:id="@+id/adjusterpanel"
+        android:layout_width="140dp"
+        android:layout_height="match_parent"
+        android:gravity="left"
+        android:layout_marginLeft="10dp"
+        android:orientation="vertical">
+
+        <!-- X Position Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            >
+
+            <TextView
+                android:id="@+id/text_pos_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="X" />
+
+            <EditText
+                android:id="@+id/et_pos_x"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="number" />
+
+
+        </LinearLayout>
+
+        <!-- Y Position Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            >
+
+            <TextView
+                android:id="@+id/text_pos_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="Y" />
+
+            <EditText
+                android:id="@+id/et_pos_y"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="number" />
+
+
+        </LinearLayout>
+
+        <!-- Z Position Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            >
+
+            <TextView
+                android:id="@+id/text_pos_z"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="Z" />
+
+            <EditText
+                android:id="@+id/et_pos_z"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="number" />
+
+
+        </LinearLayout>
+
+
+
+        <!-- Height Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            >
+
+            <TextView
+                android:id="@+id/text_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="H" />
+
+            <EditText
+                android:id="@+id/et_height"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="number" />
+
+
+        </LinearLayout>
+
+
+        <!-- Width Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:orientation="horizontal"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            >
+
+            <TextView
+                android:id="@+id/text_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="W" />
+
+            <EditText
+                android:id="@+id/et_width"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="number" />
+
+
+        </LinearLayout>
+
+        <!-- Done Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            >
+
+            <Button
+                android:id="@+id/node_save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/accept_button"
+                android:text="Save" />
+        </LinearLayout>
+
+        <!-- Delete Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            >
+
+            <Button
+                android:id="@+id/node_delete_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/delete_button"
+                android:text="Delete" />
+        </LinearLayout>
+
+
+        <!--
+        <LinearLayout
+            android:layout_width="140dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_pos_y"
+                android:layout_marginTop="18dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="Y" />
+
+            <com.cepheuen.elegantnumberbutton.view.ElegantNumberButton
+                android:id="@+id/button_pos_y"
+                android:layout_width="120dp"
+                app:backGroundColor="@color/fabbg"
+                app:textSize="8sp"
+                android:layout_marginTop="18dp"
+                android:layout_centerHorizontal="true"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="140dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_pos_x"
+                android:layout_marginTop="18dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="X" />
+
+            <com.cepheuen.elegantnumberbutton.view.ElegantNumberButton
+                android:id="@+id/button_pos_x"
+                android:layout_width="120dp"
+                app:backGroundColor="@color/fabbg"
+                app:textSize="8sp"
+                android:layout_marginTop="18dp"
+                android:layout_centerHorizontal="true"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="140dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_pos_z"
+                android:layout_marginTop="18dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16dp"
+                android:text="Z" />
+
+            <com.cepheuen.elegantnumberbutton.view.ElegantNumberButton
+                android:id="@+id/button_pos_z"
+                android:layout_width="120dp"
+                app:backGroundColor="@color/fabbg"
+                app:textSize="8sp"
+                android:layout_marginTop="18dp"
+                android:layout_centerHorizontal="true"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    -->
+
+
+
+
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/cp"
         android:layout_width="match_parent"
