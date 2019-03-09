@@ -1,5 +1,3 @@
-
-
 package com.sandbox.sandbox.MongoCom;
 
 import com.mongodb.MongoClient;
@@ -117,3 +115,4 @@ public class DBObject
         return info;
     }
 }
+
