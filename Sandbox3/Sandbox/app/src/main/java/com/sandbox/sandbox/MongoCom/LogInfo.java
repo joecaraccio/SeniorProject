@@ -18,16 +18,16 @@ public class LogInfo
     private Document document;
     private String tourName;
     private int userID;
-    private double userHeight;
-    private double objLocX;
-    private double objLocY;
-    private double objLocZ;
-    private double roll;
-    private double pitch;
-    private double yaw;
-    private int stamp;
+    private float userHeight;
+    private float objLocX;
+    private float objLocY;
+    private float objLocZ;
+    private float roll;
+    private float pitch;
+    private float yaw;
+    private float stamp;
 
-    public LogInfo(String name, int userid, double height, double x, double y, double z, double rx, double ry, double rz, int time)
+    public LogInfo(String name, int userid, float height, float x, float y, float z, float rx, float ry, float rz, float time)
     {
         this.tourName = name;
         this.userID = userid;
@@ -59,12 +59,12 @@ public class LogInfo
     {
         this.document = recievedDocument;
         this.tourName = recievedDocument.get("tourName").toString();
-        this.objLocX = Double.valueOf(recievedDocument.get("x-coordinate").toString());
-        this.objLocY = Double.valueOf(recievedDocument.get("y-coordinate").toString());
-        this.objLocZ = Double.valueOf(recievedDocument.get("z-coordinate").toString());
-        this.roll = Double.valueOf(recievedDocument.get("roll").toString());
-        this.pitch = Double.valueOf(recievedDocument.get("pitch").toString());
-        this.yaw = Double.valueOf(recievedDocument.get("yaw").toString());
+        this.objLocX = Float.valueOf(recievedDocument.get("x-coordinate").toString());
+        this.objLocY = Float.valueOf(recievedDocument.get("y-coordinate").toString());
+        this.objLocZ = Float.valueOf(recievedDocument.get("z-coordinate").toString());
+        this.roll = Float.valueOf(recievedDocument.get("roll").toString());
+        this.pitch = Float.valueOf(recievedDocument.get("pitch").toString());
+        this.yaw = Float.valueOf(recievedDocument.get("yaw").toString());
         //Need to convert this one to string array and test this
         //this.info = (BsonArray)recievedDocument["info"];
     }

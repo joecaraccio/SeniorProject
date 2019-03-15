@@ -1,6 +1,20 @@
 package com.sandbox.sandbox.MongoCom;
 
 import com.mongodb.DBCursor;
+import com.mongodb.Block;
+import com.mongodb.ServerAddress;
+import com.mongodb.async.SingleResultCallback;
+import com.mongodb.async.client.*;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+import com.mongodb.connection.ClusterSettings;
+import com.mongodb.ConnectionString;
+import org.bson.Document;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
@@ -31,7 +45,7 @@ import static java.lang.System.in;
 public class MongoCom {
 
     private String tourName;
-    private double userHeight;
+    private float userHeight;
     private MongoDatabase dataBase;
     private MongoClient dbClient;
 
@@ -42,8 +56,12 @@ public class MongoCom {
      */
     public MongoCom(String tourName)
     {
-        String connectionString = "mongodb://admin:TourGuide3546@ds157574.mlab.com:57574/holotours";
-        MongoClientURI uri = new MongoClientURI(connectionString);
+        //String connectionString = "mongodb://admin:TourGuide3546@ds157574.mlab.com:57574/holotours";
+        //MongoClientURI uri = new MongoClientURI(connectionString);
+        //dbClient = new MongoClient(uri);
+        MongoClientURI uri = new MongoClientURI(
+                "mongodb://admin:admin1@cluster0-shard-00-00-ka88r.mongodb.net:27017,cluster0-shard-00-01-ka88r.mongodb.net:27017,cluster0-shard-00-02-ka88r.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true");
+
         dbClient = new MongoClient(uri);
         dataBase = dbClient.getDatabase("holotours");
         this.tourName = tourName;
@@ -73,13 +91,13 @@ public class MongoCom {
      * table.
      * @param height
      */
-    public void createNewTour( double height)
+    public void createNewTour( float height)
     {
-        if (showAllTourNames().contains(tourName))
-        {
-            throw new IllegalArgumentException();
-        }
-        else
+        //if (showAllTourNames().contains(tourName))
+        //{
+        //    throw new IllegalArgumentException();
+        //}
+        //else
         {
             userHeight = height;
             String s = Double.toString(height);
@@ -99,7 +117,7 @@ public class MongoCom {
     {
         MongoCollection collection = dataBase.getCollection("tours");
         Document id = (Document)collection.find(eq("tourName", tourName)).first();
-        userHeight = Double.valueOf(id.get("userHeight").toString());
+        userHeight = Float.valueOf(id.get("userHeight").toString());
     }
 
     /**
@@ -119,9 +137,9 @@ public class MongoCom {
      * values assosiated with each object and the object type itself.
      * @return
      */
-    public List<DBObject> getObjects()
+    public List<DBObj> getObjects()
     {
-        List<DBObject> objects = new ArrayList<DBObject>();
+        List<DBObj> objects = new ArrayList<DBObj>();
         //loop through each collection
         MongoCursor<String> dbNames = dataBase.listCollectionNames().iterator();
         MongoCollection col = dataBase.getCollection("foundStuff");
@@ -138,7 +156,7 @@ public class MongoCom {
                 MongoCursor<Document> obj = collection.find(eq("tourName", tourName)).iterator();
                 while(obj.hasNext())
                 {
-                    DBObject doc = new DBObject(obj.next());
+                    DBObj doc = new DBObj(obj.next());
                     //This line is just for my testing so ii can see results in db
                     //col.InsertOne(doc.returnDoc());
                     objects.add(doc);
@@ -198,7 +216,7 @@ public class MongoCom {
      * This returns the height of the user who made the tour.
      * @return
      */
-    public double getAdminHeight()
+    public float getAdminHeight()
     {
         return userHeight;
     }
@@ -211,9 +229,9 @@ public class MongoCom {
         List<String> testArray = new ArrayList();
         testArray.add("test");
         testArray.add("testing");
-        testArray.add("Information being stroed in array");
-        MongoCom com1 = new MongoCom("tour1");
-        com1.openTour();
+        testArray.add("Information being stored in array");
+        //MongoCom com1 = new MongoCom("tour1");
+        //com1.openTour();
         //com1.createNewTour(6.0);
         //DBObject obj1 = new DBObject(com1.returnTourName(), "Arrow", 1, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
         //DBObject obj2 = new DBObject(com1.returnTourName(), "Arrow", 1.2, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
@@ -226,22 +244,22 @@ public class MongoCom {
         //com1.setObject(obj4.returnDoc());
         //com1.setObject(obj5.returnDoc());
         MongoCom com2 = new MongoCom("tour2");
-        com2.createNewTour(6.0);
-        DBObject obj6 = new DBObject(com2.returnTourName(), "Arrow", 1, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
-        DBObject obj7 = new DBObject(com2.returnTourName(), "Arrow", 1.2, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
-        DBObject obj8 = new DBObject(com2.returnTourName(), "Arrow", 1.23, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
-        DBObject obj9 = new DBObject(com2.returnTourName(), "Arrow", 1.222, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
-        DBObject obj10 = new DBObject(com2.returnTourName(), "Arrow", 1.1, 2.1, 2.3, 2.3, 1.2, 1.23232, 1.2, testArray);
+        com2.createNewTour(6.0f);
+        DBObj obj6 = new DBObj(com2.returnTourName(), "Arrow", 1f, 2.1f, 2.3f, 2.3f, 1.2f, 1.23232f, 1.222232f, 1.2f, testArray);
+        DBObj obj7 = new DBObj(com2.returnTourName(), "Arrow", 1.2f, 2.1f, 2.3f, 2.3f, 1.2f, 1.23232f, 122.2f, 1.2f, testArray);
+        DBObj obj8 = new DBObj(com2.returnTourName(), "Arrow", 1.23f, 2.1f, 2.3f, 2.3f, 1.2f, 1.23232f, 1.2f, 0.000f, testArray);
+        DBObj obj9 = new DBObj(com2.returnTourName(), "Arrow", 1.222f, 2.1f, 2.3f, 2.3f, 1.2f, 1.23232f, 1.2f, 0.02932f, testArray);
+        DBObj obj10 = new DBObj(com2.returnTourName(), "Arrow", 1.1f, 2.1f, 2.3f, 2.3f, 1.2f, 1.23232f, 0.0202032f, 1.2f, testArray);
         com2.setObject(obj6.returnDoc());
         com2.setObject(obj7.returnDoc());
         com2.setObject(obj8.returnDoc());
         com2.setObject(obj9.returnDoc());
         com2.setObject(obj10.returnDoc());
 
-        List<String> names = com1.showAllTourNames();
+        List<String> names = com2.showAllTourNames();
         for(int i =0; i < names.size(); i ++)
             System.out.println(names.get(i));
-        List<DBObject> docs = com1.getObjects();
+        List<DBObj> docs = com2.getObjects();
         for( int i =0; i < docs.size(); i ++)
         {
             System.out.println("Document: " + i);
@@ -261,9 +279,9 @@ public class MongoCom {
             }
         }
         com2.removeAllTourObj();
-        LogInfo user1 = new LogInfo("tour1", 1, 5.7, 1.232, 1.23232, 2.1212, 34.232, 1.21212121212, 2.32323232, 100);
+        LogInfo user1 = new LogInfo("tour1", 1, 5.7f, 1.232f, 1.23232f, 2.1212f, 34.232f, 1.21212121212f, 2.32323232f, 100f);
         com2.setObject(user1.returnDoc());
-        com1.close();
+        //com1.close();
         com2.close();
     }
 

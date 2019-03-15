@@ -1,3 +1,6 @@
+//Need to make the database comunication method
+//Also need to store allObjects
+//Need to run through slightly different object creation method
 package com.sandbox.sandbox;
 
 import android.app.Activity;
@@ -50,11 +53,16 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.sandbox.sandbox.MongoCom.DBObj;
+import com.sandbox.sandbox.MongoCom.MongoCom;
 import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
 import com.sandbox.sandbox.gallery.MainGallery;
 import com.sandbox.sandbox.tools.SoundObject;
+
+import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,7 +158,9 @@ public class MainActivity extends AppCompatActivity {
 
     private List<SoundObject> SoundObjects;
 
-
+    private List<DBObj> allObjects;
+    private String tourName;
+    private float creatorHeight;
     //place holder for music dialog
     int AudioPoint = 0;
 
@@ -184,8 +194,12 @@ public class MainActivity extends AppCompatActivity {
         //List of sound Objects
         this.SoundObjects = new ArrayList<>();
 
-
-
+        //List of DBObjects to keep track of items made
+        this.allObjects = new ArrayList<>();
+        //Initalize tourName to be updated later by user
+        tourName = "testTour";
+        //Initialize height to average
+        creatorHeight = 5.8f;
 
         //Setup Control Panel
         ControlPanel = (LinearLayout) findViewById(R.id.cp);
@@ -480,7 +494,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    private void objectDump()
+    {
+        //MongoCom dumpCom = new MongoCom(tourName);
+        //try
+        //{
+        //    dumpCom.createNewTour(creatorHeight);
+        //}
+        //catch( Exception e)
+        //{
+        //    dumpCom.openTour();
+        //    dumpCom.removeAllTourObj();
+        //    dumpCom.createNewTour(creatorHeight);
+        //}
+        //for( int i = 0; i < allObjects.size(); i++)
+        //{
+        //    dumpCom.setObject(allObjects.get(i).returnDoc());
+        //}
+        //dumpCom.close();
+    }
     //update a view renderables height
     private void UpdateViewHeight(int h){
         if(nodeView != null){
@@ -527,7 +559,6 @@ public class MainActivity extends AppCompatActivity {
         Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,distanceFromFace)).extractTranslation();
         Vector3 WorldPosition = GetCameraPosition();
         float tempCardLocation[] = currentPose.getTranslation();
-
         Vector3 ElementPosition = new Vector3();
         ElementPosition.set(tempCardLocation[0], tempCardLocation[1], tempCardLocation[2]);
 
@@ -587,7 +618,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Add to Scene Object collection
         //Add to Datbase
-        this.CreateObject(currentPose);
+        //this.CreateObject(currentPose);
 
         ViewRenderable.builder().setView(this, R.layout.sandboxus_test).build()
                 .thenAccept(
@@ -696,6 +727,8 @@ public class MainActivity extends AppCompatActivity {
         //Setup the Node
         AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
+        //Used to add item to the allObject list
+        CreateObject("sound", i, an, n1, 1.0f);
         this.AddSoundLocation(n1, i);
 
         /*
@@ -771,12 +804,13 @@ public class MainActivity extends AppCompatActivity {
                     //SetAdjustDimensions(h, w);
 
 
-
                     ImageView im = view.findViewById(R.id.imageview1);
                     //set image to place
                     im.setImageResource(ResourceLink.image_ids[i]);
                     //
 
+                    //Used to add item to the allObject list
+                    CreateObject("image",i, an, n1, 1.0f);
                 })
         .exceptionally(
                 (throwable) -> {
@@ -833,14 +867,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     //logs where our created object is
-    public void CreateObject(Pose objectPose){
-        float RotationFloat[] = objectPose.getRotationQuaternion();
-        float X_Axis[] = objectPose.getXAxis();
-        float Y_Axis[] = objectPose.getYAxis();
-        float Z_Axis[] = objectPose.getZAxis();
-
-        BasicDBObject obj = new BasicDBObject();
-        obj.append("Rotation_", 0);
+    public void CreateObject(String type, int itemIndex, Node anchor, Node childNode, float scale){
+        //Used to add item to the allObject list
+        List<String> temp = new ArrayList<>();
+        //for( int i = 0; i < itemIndex.length; i ++)
+        temp.add("" + itemIndex);
+        DBObj tempObj = new DBObj(this.tourName, type, anchor.getLocalPosition().x, anchor.getLocalPosition().y, anchor.getLocalPosition().z, childNode.getLocalRotation().x, childNode.getLocalRotation().y, childNode.getLocalRotation().z, childNode.getLocalRotation().w, scale, temp);
+        this.allObjects.add(tempObj);
 
     }
 
@@ -1043,6 +1076,7 @@ Log.i("joe", "Music Player is False.. Start it");
         arFragment.getArSceneView().getScene().getCamera().setWorldPosition(v);
     }
 
+
     /**
      * Returns false and displays an error message if Sceneform can not run, true if Sceneform can run
      * on this device.
@@ -1196,6 +1230,8 @@ Log.i("joe", "Music Player is False.. Start it");
             imageDialog.dismiss();
             Log.i("joe", "time to create an image view");
             SetupImageComponent(i);
+            //if( allObjects.size() > 3)
+                objectDump();
 
         }
     }
