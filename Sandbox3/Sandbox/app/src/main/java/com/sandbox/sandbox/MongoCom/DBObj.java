@@ -1,8 +1,8 @@
 package com.sandbox.sandbox.MongoCom;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+//import com.mongodb.MongoClient;
+//import com.mongodb.client.MongoCollection;
+//import com.mongodb.client.MongoDatabase;
 
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
@@ -19,7 +19,7 @@ import static java.lang.System.in;
 
 public class DBObj
 {
-    private Document document;
+    private final Document document;
     private String tourName;
     private String objectType;
     private float objLocX;
@@ -74,7 +74,7 @@ public class DBObj
         //Need to convert this one to String array and test this
         info = (List<String>)recievedDocument.get("info");
     }
-    public Document returnDoc()
+    public final Document returnDoc()
     {
         return document;
     }
@@ -120,6 +120,10 @@ public class DBObj
     public List<String> returnInfo()
     {
         return info;
+    }
+    public String returnWriteString() {
+        return String.format("{\"tourName\": \"%s\", "+ "\"objectType\": \"%s\", "+ "\"x-coordinate\": \"%f\", "+ "\"y-coordinate\": \"%f\", "+ "\"z-coordinate\": \"%f\", "+ "\"roll\": \"%f\", "
+                + "\"pitch\": \"%f\", "+ "\"yaw\": \"%f\", "+ "\"w\": \"%f\", "+ "\"scale\": \"%f\"}", tourName, objectType, objLocX, objLocY, objLocZ, roll, pitch, yaw, w, scale);
     }
 }
 

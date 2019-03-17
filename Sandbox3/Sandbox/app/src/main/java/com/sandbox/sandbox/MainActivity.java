@@ -37,6 +37,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
@@ -54,8 +56,12 @@ import com.google.ar.sceneform.ux.ArFragment;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteDeleteResult;
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteInsertManyResult;
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateOptions;
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateResult;
 import com.sandbox.sandbox.MongoCom.DBObj;
-import com.sandbox.sandbox.MongoCom.MongoCom;
+//import com.sandbox.sandbox.MongoCom.MongoCom;
 import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
@@ -68,8 +74,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import com.mongodb.stitch.android.core.auth.StitchUser;
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteFindIterable;
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoClient;
+import com.mongodb.stitch.android.services.mongodb.remote.RemoteMongoCollection;
+import com.mongodb.stitch.android.core.Stitch;
+import com.mongodb.stitch.android.core.auth.StitchAuth;
+import com.mongodb.stitch.android.core.auth.StitchAuthListener;
+import com.mongodb.stitch.android.core.StitchAppClient;
+import com.mongodb.stitch.android.services.mongodb.remote.SyncFindIterable;
+import com.mongodb.stitch.core.auth.providers.anonymous.AnonymousCredential;
+import com.mongodb.stitch.core.auth.providers.facebook.FacebookCredential;
+import com.mongodb.stitch.core.auth.providers.google.GoogleCredential;
+import com.mongodb.stitch.core.services.mongodb.remote.RemoteInsertOneResult;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.ChangeEventListener;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.DefaultSyncConflictResolvers;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.ErrorListener;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.internal.ChangeEvent;
+
+import com.google.android.gms.tasks.Task;
+import android.support.annotation.NonNull;
 //https://github.com/google-ar/arcore-android-sdk/issues/110
 /*
     you can create an anchor at any pose
@@ -158,7 +188,11 @@ public class MainActivity extends AppCompatActivity {
 
     private List<SoundObject> SoundObjects;
 
-    private List<DBObj> allObjects;
+    private CopyOnWriteArrayList<DBObj> allObjects;
+    private StitchAppClient _client;
+    private RemoteMongoClient _mongoClient;
+    private RemoteMongoCollection _remoteCollection;
+
     private String tourName;
     private float creatorHeight;
     //place holder for music dialog
@@ -177,7 +211,32 @@ public class MainActivity extends AppCompatActivity {
 
         LoadElements();
 
-
+        this._client = Stitch.getDefaultAppClient();
+        _mongoClient = this._client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
+//        _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("tours");
+//        _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(
+//                new Continuation<StitchUser, Task<RemoteUpdateResult>>() {
+//
+//                    @Override
+//                    public Task<RemoteUpdateResult> then(@NonNull Task<StitchUser> task) throws Exception {
+//                        if (!task.isSuccessful()) {
+//                            Log.e("STITCH", "Login failed!");
+//                            throw task.getException();
+//                        }
+//
+//                        //List<Document> docs = new ArrayList<>();
+//                        //for( int i =0; i < allObjects.size(); i ++) {
+//                        //    if( allObjects.get(i).returnObjType().equals("image"))
+//                        //        docs.add(allObjects.get(i).returnDoc());
+//                        //}
+//                        final Document doc = new Document();
+//                        doc.append("tourName", tourName);
+//                        doc.append("height", creatorHeight);
+//                        return _remoteCollection.insertOne(
+//                                doc
+//                        );
+//                    }
+//                });
         //ensure we hide keyboard
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
@@ -195,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         this.SoundObjects = new ArrayList<>();
 
         //List of DBObjects to keep track of items made
-        this.allObjects = new ArrayList<>();
+        this.allObjects = new CopyOnWriteArrayList<>();
         //Initalize tourName to be updated later by user
         tourName = "testTour";
         //Initialize height to average
@@ -496,22 +555,93 @@ public class MainActivity extends AppCompatActivity {
 
     private void objectDump()
     {
-        //MongoCom dumpCom = new MongoCom(tourName);
-        //try
-        //{
-        //    dumpCom.createNewTour(creatorHeight);
-        //}
-        //catch( Exception e)
-        //{
-        //    dumpCom.openTour();
-        //    dumpCom.removeAllTourObj();
-        //    dumpCom.createNewTour(creatorHeight);
-        //}
-        //for( int i = 0; i < allObjects.size(); i++)
-        //{
-        //    dumpCom.setObject(allObjects.get(i).returnDoc());
-        //}
-        //dumpCom.close();
+            _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("objects");
+            _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(new Continuation<StitchUser, Task<RemoteDeleteResult>>() {
+                @Override
+                public Task<RemoteDeleteResult> then(@NonNull Task<StitchUser> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        Log.e("STITCH", "Login failed!");
+                        throw task.getException();
+                    }
+                    Document filter = new Document().append("tourName", tourName);
+                    return _remoteCollection.deleteMany(filter);
+                }
+            }).continueWithTask(
+                    new Continuation<RemoteDeleteResult, Task<RemoteInsertManyResult>>() {
+
+                        @Override
+                        public Task<RemoteInsertManyResult> then(@NonNull Task<RemoteDeleteResult> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                Log.e("STITCH", "Delete Failed!");
+                                throw task.getException();
+                            }
+
+                            final List<Document> docs = new ArrayList<>();
+                            for( int i =0; i < allObjects.size(); i ++) {
+                                docs.add(allObjects.get(i).returnDoc());
+                            }
+                            //final Document doc = allObjects.get(j).returnDoc();
+                            return _remoteCollection.insertMany(
+                                  docs
+                            );
+                        }
+                    }
+            ).addOnCompleteListener(new OnCompleteListener<RemoteInsertManyResult>() {
+                @Override
+                public void onComplete(@NonNull Task<RemoteInsertManyResult> task) {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(context, "Saved new Tour to DB", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Log.e("STITCH", "Error: " + task.getException().toString());
+                    task.getException().printStackTrace();
+                }
+            });
+    }
+    private void setupPremades(){
+            _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("objects");
+            _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(
+                    new Continuation<StitchUser, Task<List<Document>>>() {
+
+                        @Override
+                        public Task<List<Document>> then(@NonNull Task<StitchUser> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                Log.e("STITCH", "Login failed!");
+                                throw task.getException();
+                            }
+
+                            List<Document> docs = new ArrayList<>();
+                            return _remoteCollection
+                                    .find(new Document("tourName", tourName))
+                                    .limit(100)
+                                    .into(docs);
+                        }
+                    }
+            ).addOnCompleteListener(new OnCompleteListener<List<Document>>() {
+                @Override
+                public void onComplete(@NonNull Task<List<Document>> task) {
+                    if (task.isSuccessful()) {
+                        Log.d("STITCH", "Found docs: " + task.getResult().toString() );// + task.getResult().toString());
+                        List<Document> docs = task.getResult();
+                        for( int i = 0; i < docs.size(); i ++)
+                        {
+                            if(docs.get(i).size() == 12) {
+                                DBObj obj = new DBObj(docs.get(i));
+                                allObjects.add(obj);
+                                List<String> temp = obj.returnInfo();
+                                int index = Integer.parseInt(temp.get(0));
+                                if( obj.returnObjType().equals("image"))
+                                    SetupImageComponent(index, CreateFaceNode(obj), 1);
+                                else if(obj.returnObjType().equals("sound"))
+                                    SetupSoundComponent(index, CreateFaceNode(obj), 1);
+                            }
+                        }
+                        return;
+                    }
+                    Log.e("STITCH", "Error: " + task.getException().toString());
+                    task.getException().printStackTrace();
+                }
+            });
     }
     //update a view renderables height
     private void UpdateViewHeight(int h){
@@ -578,6 +708,30 @@ public class MainActivity extends AppCompatActivity {
         return anchorNode;
     }
 
+    //Creates Node Faceing at Point
+    private AnchorNode CreateFaceNode( DBObj doc){
+        //create a pose slightly in front of camera
+        float[] vec1 = {doc.returnObjLocX(), doc.returnObjLocY(), doc.returnObjLocZ()};
+        float[] vec2 = {0f, 0f, 0f, 1f};
+        Pose currentPose = new Pose(vec1, vec2);
+        Quaternion lookRotation = new Quaternion();
+        lookRotation.w = doc.returnW();
+        lookRotation.x = doc.returnRoll();
+        lookRotation.y = doc.returnPitch();
+        lookRotation.z = doc.returnYaw();
+
+        Anchor anchor = arFragment.getArSceneView().getSession().createAnchor(currentPose);
+
+        //Anchor anchor = session.createAnchor(currentPose);
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(arFragment.getArSceneView().getScene());
+        Node n1 = new Node();
+        n1.setEnabled(true);
+        n1.setWorldRotation(lookRotation);
+        anchorNode.addChild(n1);
+
+        return anchorNode;
+    }
 
     //not currently used
     private void ScreenPress(MotionEvent tap){
@@ -683,7 +837,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ImagePickResult) {
            Log.i("joe","ImagePickResult");
            //Image has been picked
-            SetupImageComponent((int) data.getExtras().get("Selected Picture Index"));
+            SetupImageComponent((int) data.getExtras().get("Selected Picture Index"), GetFaceNode(), 0);
 
         }
     }
@@ -721,14 +875,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void SetupSoundComponent(int i){
+    private void SetupSoundComponent(int i, AnchorNode an, int premadeFlag){
         Log.i("joe", "Setup Sound Component for index: " + Integer.toString(i));
 
         //Setup the Node
-        AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
         //Used to add item to the allObject list
-        CreateObject("sound", i, an, n1, 1.0f);
+        if( premadeFlag == 0)
+            CreateObject("sound", i, an, n1, 1.0f);
         this.AddSoundLocation(n1, i);
 
         /*
@@ -777,11 +931,10 @@ public class MainActivity extends AppCompatActivity {
 
     //Called from the result of our imagePicker
     //passed information of where our image is
-    private void SetupImageComponent(int i){
+    private void SetupImageComponent(int i, AnchorNode an, int premadeFlag){
         Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
 
         //Setup the Node
-        AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
 
         ViewRenderable.builder().setView(this, R.layout.sandbox_ui_image).build()
@@ -810,7 +963,8 @@ public class MainActivity extends AppCompatActivity {
                     //
 
                     //Used to add item to the allObject list
-                    CreateObject("image",i, an, n1, 1.0f);
+                    if( premadeFlag == 0)
+                        CreateObject("image",i, an, n1, 1.0f);
                 })
         .exceptionally(
                 (throwable) -> {
@@ -859,6 +1013,32 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 ImageSelectorDialog();
                 //CP_Press_Image();
+            }
+        });
+
+        FloatingActionButton cp_save_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_save);
+        cp_save_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if( allObjects.size() > 0) {
+                    Toast.makeText(context, "Saving to DB...", Toast.LENGTH_SHORT).show();
+                    objectDump();
+                }
+            }
+        });
+
+        FloatingActionButton cp_playTour_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_playTour);
+        cp_playTour_fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if( allObjects.size() <= 0 ) {
+                    setupPremades();
+                    cp_playTour_fab.hide();
+                    cp_image_fab.hide();
+                    cp_audio_fab.hide();
+                    cp_model_fab.hide();
+                    cp_save_fab.hide();
+                    cp_slideshow_fab.hide();
+                    cp_video_fab.hide();
+                }
             }
         });
 
@@ -1229,10 +1409,9 @@ Log.i("joe", "Music Player is False.. Start it");
         if(imageDialog != null && imageDialog.isShowing() == true){
             imageDialog.dismiss();
             Log.i("joe", "time to create an image view");
-            SetupImageComponent(i);
-            //if( allObjects.size() > 3)
-                objectDump();
-
+            SetupImageComponent(i, GetFaceNode(), 0);
+            //if( allObjects.size() > 2 )
+            //    objectDump();
         }
     }
 
@@ -1243,7 +1422,7 @@ Log.i("joe", "Music Player is False.. Start it");
         if(soundDialog != null && soundDialog.isShowing() == true){
             soundDialog.dismiss();
             Log.i("joe", "time to create a sound view");
-            SetupSoundComponent(i);
+            SetupSoundComponent(i, GetFaceNode(), 0);
         }
     }
 

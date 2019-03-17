@@ -1,6 +1,6 @@
 package com.sandbox.sandbox.MongoCom;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 

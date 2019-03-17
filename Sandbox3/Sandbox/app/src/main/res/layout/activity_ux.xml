@@ -294,17 +294,40 @@
         >
 
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/cp_image"
-            android:src="@drawable/baseline_add_photo_alternate_black_18dp"
-            app:backgroundTint="@color/fabbg"
-            app:fabSize="mini"
+            android:id="@+id/cp_playTour"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
+            android:layout_weight="1"
             android:clickable="true"
-            />
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            app:srcCompat="@android:drawable/ic_media_ff" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini"
+            app:srcCompat="@android:drawable/ic_menu_save" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/cp_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:src="@drawable/baseline_add_photo_alternate_black_18dp"
+            app:backgroundTint="@color/fabbg"
+            app:fabSize="mini" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/cp_video"
