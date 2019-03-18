@@ -1,16 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sandboximage"
     android:layout_width="120dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:clipChildren="false"
-    android:clipToPadding="false" >
+    android:clipToPadding="false">
 
     <ImageView
         android:id="@+id/imageview1"
         android:adjustViewBounds="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <!-- Image Edit View -->
+
+    <LinearLayout
+        android:id="@+id/adjusterpanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="left"
+        android:orientation="horizontal">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/control_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:backgroundTint="@color/fabbg_edit"
+                app:fabSize="mini"
+                app:srcCompat="@android:drawable/ic_delete" />
+
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/control_sizedown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:backgroundTint="@color/fabbg_edit"
+                app:fabSize="mini"
+                app:srcCompat="@android:drawable/ic_delete" />
+
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/control_sizeup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:backgroundTint="@color/fabbg_edit"
+                app:fabSize="mini"
+                app:srcCompat="@android:drawable/ic_delete" />
+    </LinearLayout>
+
 
 </LinearLayout>

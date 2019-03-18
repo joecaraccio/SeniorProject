@@ -956,23 +956,35 @@ public class MainActivity extends AppCompatActivity {
                     //int w = nodeView.getLayoutParams().width;
                     //SetAdjustDimensions(h, w);
 
+                    ExhibitObject eobject = new ExhibitObject(an, n1);
+                    eobject.image = view.findViewById(R.id.imageview1);
+                    eobject.image.setImageResource(ResourceLink.image_ids[i]);
+                    eobject.SetupImageTouch();
+                    eobject.SetupControlPanel(view);
 
+
+                    /*
                     ImageView im = view.findViewById(R.id.imageview1);
                     //set image to place
                     im.setImageResource(ResourceLink.image_ids[i]);
 
-                    //Setup on Touch Listener 
+                    //Setup on Touch Listener .. capture drags
                     im.setOnTouchListener(new View.OnTouchListener() {
                         @Override
                         public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                            Log.i("joe", "image view has been touched");
+
                             return false;
                         }
                     });
+                    */
 
 
                     //Used to add item to the allObject list
-                    if( premadeFlag == 0)
+                    if( premadeFlag == 0){
                         CreateObject("image",i, an, n1, 1.0f);
+                    }
                 })
         .exceptionally(
                 (throwable) -> {
