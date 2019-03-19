@@ -908,7 +908,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        Log.i("joe", "OnActivityResult");
         //ResumeSession();
         if (requestCode == ImagePickResult) {
            Log.i("joe","ImagePickResult");
@@ -1007,6 +1006,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Called from the result of our imagePicker
     //passed information of where our image is
+    //https://stackoverflow.com/questions/3669239/how-to-drag-an-image-by-touching-in-android
     private void SetupImageComponent(int i, AnchorNode an, int premadeFlag){
         Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
 
@@ -1032,15 +1032,35 @@ public class MainActivity extends AppCompatActivity {
                     //int w = nodeView.getLayoutParams().width;
                     //SetAdjustDimensions(h, w);
 
+                    ExhibitObject eobject = new ExhibitObject(an, n1);
+                    eobject.image = view.findViewById(R.id.imageview1);
+                    eobject.image.setImageResource(ResourceLink.image_ids[i]);
+                    eobject.SetupImageTouch();
+                    eobject.SetupControlPanel(view);
 
+
+                    /*
                     ImageView im = view.findViewById(R.id.imageview1);
                     //set image to place
                     im.setImageResource(ResourceLink.image_ids[i]);
-                    //
+
+                    //Setup on Touch Listener .. capture drags
+                    im.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                            Log.i("joe", "image view has been touched");
+
+                            return false;
+                        }
+                    });
+                    */
+
 
                     //Used to add item to the allObject list
-                    if( premadeFlag == 0)
+                    if( premadeFlag == 0){
                         CreateObject("image",i, an, n1, 1.0f);
+                    }
                 })
         .exceptionally(
                 (throwable) -> {
@@ -1258,8 +1278,6 @@ Log.i("joe", "Music Player is False.. Start it");
 
         int currentPlaying = -1;
 
-        Log.i("joe", "");
-        Log.i("joe", "Track Audio Object");
         for(int i = 0; i < this.SoundObjects.size(); i++) {
             SoundObject sotemp = this.SoundObjects.get(i);
             float Distance = CalculateDistance(UserPositon, sotemp.SoundPosition);
