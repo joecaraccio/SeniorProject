@@ -5,8 +5,10 @@ package com.sandbox.sandbox;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -19,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -62,6 +65,7 @@ import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateOptions;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteUpdateResult;
 import com.sandbox.sandbox.MongoCom.DBObj;
 //import com.sandbox.sandbox.MongoCom.MongoCom;
+import com.sandbox.sandbox.MongoCom.LogInfo;
 import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
@@ -69,13 +73,16 @@ import com.sandbox.sandbox.gallery.MainGallery;
 import com.sandbox.sandbox.tools.SoundObject;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -189,12 +196,18 @@ public class MainActivity extends AppCompatActivity {
     private List<SoundObject> SoundObjects;
 
     private CopyOnWriteArrayList<DBObj> allObjects;
+    private ConcurrentLinkedQueue<LogInfo> logInfo;
+    private int testModeFlag;
+    private int fpsCount;
+    private int logSizeCount;
+    private int testLogCount;
     private StitchAppClient _client;
     private RemoteMongoClient _mongoClient;
     private RemoteMongoCollection _remoteCollection;
 
     private String tourName;
     private float creatorHeight;
+    private String userID;
     //place holder for music dialog
     int AudioPoint = 0;
 
@@ -255,6 +268,13 @@ public class MainActivity extends AppCompatActivity {
 
         //List of DBObjects to keep track of items made
         this.allObjects = new CopyOnWriteArrayList<>();
+        this.logInfo = new ConcurrentLinkedQueue<>();
+
+        //flag to know when in testing mode
+        this.testModeFlag = 0;
+        this.fpsCount = 0;
+        this.testLogCount = 0;
+        this.logSizeCount = 0;
         //Initalize tourName to be updated later by user
         tourName = "testTour";
         //Initialize height to average
@@ -386,6 +406,25 @@ public class MainActivity extends AppCompatActivity {
                     andy.select();
                 });
                 */
+        AlertDialog.Builder inputBox = new AlertDialog.Builder(this);
+        inputBox.setTitle("TourName");
+        final EditText inputText = new EditText(this);
+        inputText.setInputType(InputType.TYPE_CLASS_TEXT);
+        inputBox.setView(inputText);
+        inputBox.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                tourName = inputText.getText().toString();
+            }
+        });
+        inputBox.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        inputBox.show();
     }
 
     //puts interface elements into list
@@ -553,32 +592,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void objectDump()
+    private void logDump()
     {
-            _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("objects");
-            _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(new Continuation<StitchUser, Task<RemoteDeleteResult>>() {
-                @Override
-                public Task<RemoteDeleteResult> then(@NonNull Task<StitchUser> task) throws Exception {
-                    if (!task.isSuccessful()) {
-                        Log.e("STITCH", "Login failed!");
-                        throw task.getException();
-                    }
-                    Document filter = new Document().append("tourName", tourName);
-                    return _remoteCollection.deleteMany(filter);
-                }
-            }).continueWithTask(
-                    new Continuation<RemoteDeleteResult, Task<RemoteInsertManyResult>>() {
+            _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("tours");
+            _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(
+                    new Continuation<StitchUser, Task<RemoteInsertManyResult>>() {
 
                         @Override
-                        public Task<RemoteInsertManyResult> then(@NonNull Task<RemoteDeleteResult> task) throws Exception {
+                        public Task<RemoteInsertManyResult> then(@NonNull Task<StitchUser> task) throws Exception {
                             if (!task.isSuccessful()) {
-                                Log.e("STITCH", "Delete Failed!");
+                                Log.e("STITCH", "Login Failed!");
                                 throw task.getException();
                             }
 
                             final List<Document> docs = new ArrayList<>();
-                            for( int i =0; i < allObjects.size(); i ++) {
-                                docs.add(allObjects.get(i).returnDoc());
+                            int length = logInfo.size();
+                            for( int i =0; i < length; i ++) {
+                                docs.add(logInfo.poll().returnDoc());
                             }
                             //final Document doc = allObjects.get(j).returnDoc();
                             return _remoteCollection.insertMany(
@@ -590,13 +620,58 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<RemoteInsertManyResult> task) {
                     if (task.isSuccessful()) {
-                        Toast.makeText(context, "Saved new Tour to DB", Toast.LENGTH_SHORT).show();
+                        Log.e("NOAH", "Files added");
                         return;
                     }
                     Log.e("STITCH", "Error: " + task.getException().toString());
                     task.getException().printStackTrace();
                 }
             });
+    }
+    private void objectDump()
+    {
+        _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("objects");
+        _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(new Continuation<StitchUser, Task<RemoteDeleteResult>>() {
+            @Override
+            public Task<RemoteDeleteResult> then(@NonNull Task<StitchUser> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    Log.e("STITCH", "Login failed!");
+                    throw task.getException();
+                }
+                Document filter = new Document().append("tourName", tourName);
+                return _remoteCollection.deleteMany(filter);
+            }
+        }).continueWithTask(
+                new Continuation<RemoteDeleteResult, Task<RemoteInsertManyResult>>() {
+
+                    @Override
+                    public Task<RemoteInsertManyResult> then(@NonNull Task<RemoteDeleteResult> task) throws Exception {
+                        if (!task.isSuccessful()) {
+                            Log.e("STITCH", "Delete Failed!");
+                            throw task.getException();
+                        }
+
+                        final List<Document> docs = new ArrayList<>();
+                        for( int i =0; i < allObjects.size(); i ++) {
+                            docs.add(allObjects.get(i).returnDoc());
+                        }
+                        //final Document doc = allObjects.get(j).returnDoc();
+                        return _remoteCollection.insertMany(
+                                docs
+                        );
+                    }
+                }
+        ).addOnCompleteListener(new OnCompleteListener<RemoteInsertManyResult>() {
+            @Override
+            public void onComplete(@NonNull Task<RemoteInsertManyResult> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Saved new Tour to DB", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Log.e("STITCH", "Error: " + task.getException().toString());
+                task.getException().printStackTrace();
+            }
+        });
     }
     private void setupPremades(){
             _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("objects");
@@ -636,6 +711,7 @@ public class MainActivity extends AppCompatActivity {
                                     SetupSoundComponent(index, CreateFaceNode(obj), 1);
                             }
                         }
+                        testModeFlag = 1;
                         return;
                     }
                     Log.e("STITCH", "Error: " + task.getException().toString());
@@ -1051,6 +1127,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if( allObjects.size() <= 0 ) {
                     setupPremades();
+                    userID = UUID.randomUUID().toString();;
                     cp_playTour_fab.hide();
                     cp_image_fab.hide();
                     cp_audio_fab.hide();
@@ -1072,7 +1149,7 @@ public class MainActivity extends AppCompatActivity {
         List<String> temp = new ArrayList<>();
         //for( int i = 0; i < itemIndex.length; i ++)
         temp.add("" + itemIndex);
-        DBObj tempObj = new DBObj(this.tourName, type, anchor.getLocalPosition().x, anchor.getLocalPosition().y, anchor.getLocalPosition().z, childNode.getLocalRotation().x, childNode.getLocalRotation().y, childNode.getLocalRotation().z, childNode.getLocalRotation().w, scale, temp);
+        DBObj tempObj = new DBObj(this.tourName, type, anchor.getWorldPosition().x, anchor.getWorldPosition().y, anchor.getWorldPosition().z, childNode.getWorldRotation().x, childNode.getWorldRotation().y, childNode.getWorldRotation().z, childNode.getWorldRotation().w, scale, temp);
         this.allObjects.add(tempObj);
 
     }
@@ -1134,7 +1211,22 @@ public class MainActivity extends AppCompatActivity {
 
         //Track if we are in audio range
         this.TrackAudioRange();
+        if( testModeFlag == 1)
+        {
+            if( fpsCount >= 10) {
+                if (logInfo.size() >= 10) {
+                    logDump();
+                    //logSizeCount = 0;
+                }
 
+                LogInfo log = new LogInfo(tourName, userID, creatorHeight, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w, testLogCount);
+                logInfo.add(log);
+                //logSizeCount += 1;
+                testLogCount += 1;
+                fpsCount = 0;
+            }
+            fpsCount += 1;
+        }
 
     }
 
