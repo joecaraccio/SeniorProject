@@ -222,6 +222,53 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+
+        //Get the Root View of this Activity
+        View rootView = getWindow().getDecorView().getRootView();
+        rootView.setOnTouchListener(new View.OnTouchListener() {
+            Handler handler = new Handler();
+
+            int numberOfTaps = 0;
+            long lastTapTimeMs = 0;
+            long touchDownMs = 0;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        touchDownMs = System.currentTimeMillis();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        handler.removeCallbacksAndMessages(null);
+                        //not a tap
+                        if ((System.currentTimeMillis() - touchDownMs) > ViewConfiguration.getTapTimeout()) {
+                            //it was not a tap
+                            numberOfTaps = 0;
+                            lastTapTimeMs = 0;
+                            break;
+                        }
+
+                        if (numberOfTaps > 0
+                                && (System.currentTimeMillis() - lastTapTimeMs) < ViewConfiguration.getDoubleTapTimeout()) {
+                            numberOfTaps += 1;
+                        } else {
+                            numberOfTaps = 1;
+                        }
+                        lastTapTimeMs = System.currentTimeMillis();
+
+                        if (numberOfTaps == 3) {
+                            //Triple Tap!
+                            //if we are in presentation mode this brings us back to edit mode
+                            ToggleMode();
+                        }
+                }
+
+                return true;
+            }
+        });
+
+
+
         LoadElements();
 
         this._client = Stitch.getDefaultAppClient();
@@ -252,9 +299,6 @@ public class MainActivity extends AppCompatActivity {
 //                });
         //ensure we hide keyboard
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-
-
 
         setContentView(R.layout.activity_ux);
 
@@ -314,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
         SceneNodes = new ArrayList<Anchor>();
 
 
-        //
+        //Calculate the Dialog Sizes
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         ScreenHeight = displayMetrics.heightPixels;
@@ -406,6 +450,8 @@ public class MainActivity extends AppCompatActivity {
                     andy.select();
                 });
                 */
+
+        //Create Tour Name Box
         AlertDialog.Builder inputBox = new AlertDialog.Builder(this);
         inputBox.setTitle("TourName");
         final EditText inputText = new EditText(this);
@@ -425,6 +471,16 @@ public class MainActivity extends AppCompatActivity {
         });
 
         inputBox.show();
+    }
+
+    //switches between Test Mode and Edit Mode
+    public void ToggleMode(){
+        if(testModeFlag == 1){
+            //We are in Test Mode
+            //Change to Edit Mode
+            Log.i("joe", "User Triple Tap: Switch to Test Mode");
+            testModeFlag = 0;
+        }
     }
 
     //puts interface elements into list
