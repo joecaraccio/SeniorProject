@@ -186,12 +186,14 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer global_mediaplayer = null;
 
 
-    //Tool Dialogs
+    //Toolbar Dialogs
     Dialog imageDialog = null;
     Dialog videoDialog = null;
     Dialog soundDialog = null;
     Dialog slideShowDialog = null;
     Dialog modelShowDialog = null;
+
+    private LinearLayout ControlPanelLayout = null;
 
     private List<SoundObject> SoundObjects;
 
@@ -222,6 +224,43 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+
+
+
+
+
+        LoadElements();
+
+        this._client = Stitch.getDefaultAppClient();
+        _mongoClient = this._client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
+//        _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("tours");
+//        _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(
+//                new Continuation<StitchUser, Task<RemoteUpdateResult>>() {
+//
+//                    @Override
+//                    public Task<RemoteUpdateResult> then(@NonNull Task<StitchUser> task) throws Exception {
+//                        if (!task.isSuccessful()) {
+//                            Log.e("STITCH", "Login failed!");
+//                            throw task.getException();
+//                        }
+//
+//                        //List<Document> docs = new ArrayList<>();
+//                        //for( int i =0; i < allObjects.size(); i ++) {
+//                        //    if( allObjects.get(i).returnObjType().equals("image"))
+//                        //        docs.add(allObjects.get(i).returnDoc());
+//                        //}
+//                        final Document doc = new Document();
+//                        doc.append("tourName", tourName);
+//                        doc.append("height", creatorHeight);
+//                        return _remoteCollection.insertOne(
+//                                doc
+//                        );
+//                    }
+//                });
+        //ensure we hide keyboard
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+        setContentView(R.layout.activity_ux);
 
         //Get the Root View of this Activity
         View rootView = getWindow().getDecorView().getRootView();
@@ -268,44 +307,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
-        LoadElements();
-
-        this._client = Stitch.getDefaultAppClient();
-        _mongoClient = this._client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
-//        _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("tours");
-//        _client.getAuth().loginWithCredential(new AnonymousCredential()).continueWithTask(
-//                new Continuation<StitchUser, Task<RemoteUpdateResult>>() {
-//
-//                    @Override
-//                    public Task<RemoteUpdateResult> then(@NonNull Task<StitchUser> task) throws Exception {
-//                        if (!task.isSuccessful()) {
-//                            Log.e("STITCH", "Login failed!");
-//                            throw task.getException();
-//                        }
-//
-//                        //List<Document> docs = new ArrayList<>();
-//                        //for( int i =0; i < allObjects.size(); i ++) {
-//                        //    if( allObjects.get(i).returnObjType().equals("image"))
-//                        //        docs.add(allObjects.get(i).returnDoc());
-//                        //}
-//                        final Document doc = new Document();
-//                        doc.append("tourName", tourName);
-//                        doc.append("height", creatorHeight);
-//                        return _remoteCollection.insertOne(
-//                                doc
-//                        );
-//                    }
-//                });
-        //ensure we hide keyboard
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-        setContentView(R.layout.activity_ux);
-
         AdjustorPanel = (LinearLayout) findViewById(R.id.adjusterpanel);
         AdjustorPanel.setVisibility(LinearLayout.GONE); //hide to start
         AdjusterPanelActive = false;
         SetupAdjustorPanel();
+
+        ControlPanelLayout = (LinearLayout) findViewById(R.id.cp);
+        //ControlPanelLayout.setVisibility(LinearLayout.G)
+
+
 
         //List of sound Objects
         this.SoundObjects = new ArrayList<>();
@@ -480,6 +490,9 @@ public class MainActivity extends AppCompatActivity {
             //Change to Edit Mode
             Log.i("joe", "User Triple Tap: Switch to Test Mode");
             testModeFlag = 0;
+            testLogCount = 0;
+            fpsCount = 0;
+            logDump();
         }
     }
 
@@ -1012,8 +1025,9 @@ public class MainActivity extends AppCompatActivity {
         //Setup the Node
         Node n1 = an.getChildren().get(0);
         //Used to add item to the allObject list
-        if( premadeFlag == 0)
+        if( premadeFlag == 0){
             CreateObject("sound", i, an, n1, 1.0f);
+        }
         this.AddSoundLocation(n1, i);
 
         /*
@@ -1191,11 +1205,19 @@ public class MainActivity extends AppCompatActivity {
                     cp_save_fab.hide();
                     cp_slideshow_fab.hide();
                     cp_video_fab.hide();
+
+                    ToggleToolbar();
                 }
             }
         });
 
     }
+
+    //show or hide the Toolbar containing all the floating action buttons
+    public void ToggleToolbar(){
+
+    }
+
 
 
 
@@ -1207,6 +1229,12 @@ public class MainActivity extends AppCompatActivity {
         temp.add("" + itemIndex);
         DBObj tempObj = new DBObj(this.tourName, type, anchor.getWorldPosition().x, anchor.getWorldPosition().y, anchor.getWorldPosition().z, childNode.getWorldRotation().x, childNode.getWorldRotation().y, childNode.getWorldRotation().z, childNode.getWorldRotation().w, scale, temp);
         this.allObjects.add(tempObj);
+
+    }
+
+
+    //Remove a placed object from the database
+    public void RemoveImage(String type, int itemIndex, Node anchor, Node childNode, float scale){
 
     }
 
