@@ -21,6 +21,9 @@ public class ExhibitObject {
     private Node ObjectNode = null;
     private AnchorNode ObjectAnchorNode = null;
 
+
+    private String objectType = null;
+
     private boolean Edittable = false;
     private boolean EditMode = false;
     public ImageView image = null;

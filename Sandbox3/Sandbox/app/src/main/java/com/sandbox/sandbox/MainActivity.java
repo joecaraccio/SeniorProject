@@ -107,11 +107,27 @@ import com.mongodb.stitch.core.services.mongodb.remote.sync.internal.ChangeEvent
 
 import com.google.android.gms.tasks.Task;
 import android.support.annotation.NonNull;
-//https://github.com/google-ar/arcore-android-sdk/issues/110
+
 /*
-    you can create an anchor at any pose
+Presentation Mode
+    - Triple Tap to Open Dialog Menu, from there we can rezero the scene, back to edit mode, or cancel
+Create Mode
+    - Creating Augmented Expierences
+
+
+
+To Do
+- Image View Performance
+- Cardify Auto Selection (Touchable Highlight in Android?)
+- Slideshows
+- Video Players (if needed)
+- 3D Models
+- Ability to rezero
+
+
 
  */
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -224,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        
+
         this._client = Stitch.getDefaultAppClient();
         _mongoClient = this._client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
 //        _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("tours");
@@ -337,26 +353,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        //
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
-        /*
-        try{
-            Log.i("joe", "Create New Session");
-            session = new Session(this);
-            Config c = new Config(session);
-            c.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
-            session.configure(c);
-            Log.i("joe", "Supposibly Succesful");
-            //arFragment.upd
-
-        }catch(Exception e){
-            Log.i("joe", "Unable to Create Session");
-        }
-        arFragment.getArSceneView().setupSession(session);
-        */
 
         //Remove that hand gesture early on...'plane discovery'
         arFragment.getPlaneDiscoveryController().hide();
         arFragment.getPlaneDiscoveryController().setInstructionView(null);
+        /*
+
+        To turn off the plane renderer you should disable planeRenderer -
+        https://developers.google.com/ar/reference/java/com/google/ar/sceneform/rendering/PlaneRenderer.
+        You can do it by changing arSceneView.getPlaneRenderer().setEnabled to false.
+        Or use setVisible if you are going to render plane and hide visualization only.
+         */
 
         //Nodes in Scene
         SceneNodes = new ArrayList<Anchor>();
@@ -387,8 +396,6 @@ public class MainActivity extends AppCompatActivity {
                         });
 
 
-        //Node infoNode = new Node();
-        //infoNode.setParent(this);
 
         //Detects Gestures on Screen
         gestureDetector = new GestureDetector(
@@ -528,7 +535,6 @@ public class MainActivity extends AppCompatActivity {
         edit_button_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("joe","Click1");
                 EditButtonSaveClick();
             }
         });
