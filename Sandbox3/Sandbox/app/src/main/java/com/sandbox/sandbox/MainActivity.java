@@ -1346,6 +1346,8 @@ Log.i("joe", "Music Player is False.. Start it");
 
 
     //plays the closest audio that we are currently in range of
+    //performs a short, subtle fade out as you leave the range
+    //https://stackoverflow.com/questions/38380495/android-studio-mediaplayer-how-to-fade-in-and-out
     private void TrackAudioRange(){
         //NEED TO ADD IN RANGFE
         //add button for play mode
@@ -1571,7 +1573,6 @@ Log.i("joe", "Music Player is False.. Start it");
         View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
         imageDialog.setContentView(convertView);
         imageDialog.setTitle("Select Image");
-
 
         RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
 
