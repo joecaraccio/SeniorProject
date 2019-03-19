@@ -219,18 +219,12 @@ public class MainActivity extends AppCompatActivity {
     // FutureReturnValueIgnored is not valid
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("joe","Main Camera View Started");
+        Log.i("Scene Info","Main Camera View Started");
         if (!checkIsSupportedDeviceOrFinish(this)) {
             return;
         }
 
-
-
-
-
-
-        LoadElements();
-
+        
         this._client = Stitch.getDefaultAppClient();
         _mongoClient = this._client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
 //        _remoteCollection = _mongoClient.getDatabase("holotours").getCollection("tours");
@@ -496,14 +490,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //puts interface elements into list
-    private void LoadElements(){
-        //Initalize Components Map...map all components to strings
-        ComponentsMap.put("test", R.layout.sandboxus_test);
-        ComponentsMap.put("image", R.layout.component_image);
 
-        /////////////////////////////////
-    }
 
     //corrects state issues..ensure adjustor panel is open
     private void verifyAdjustorPanel(){
