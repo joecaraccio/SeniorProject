@@ -57,6 +57,7 @@ import com.mongodb.DBObject;
 import com.sandbox.sandbox.MongoCom.DBObj;
 import com.sandbox.sandbox.MongoCom.MongoCom;
 import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
+import com.sandbox.sandbox.adapters.ModelGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
 import com.sandbox.sandbox.gallery.MainGallery;
@@ -155,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
     Dialog soundDialog = null;
     Dialog slideShowDialog = null;
     Dialog modelShowDialog = null;
+    Dialog modeldialog = null;
 
     private List<SoundObject> SoundObjects;
 
@@ -1113,7 +1115,7 @@ Log.i("joe", "Music Player is False.. Start it");
         modelShowDialog = new Dialog(context);
         View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
         modelShowDialog.setContentView(convertView);
-        modelShowDialog.setTitle("Select Video");
+        modelShowDialog.setTitle("Select 3D Model");
 
 
         RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
@@ -1121,6 +1123,15 @@ Log.i("joe", "Music Player is False.. Start it");
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 3);
         rv.setLayoutManager(layoutManager);
         rv.setHasFixedSize(true);
+
+        ArrayList<Integer> ModelNames = new ArrayList<>();
+
+        for(int i = 0; i < ResourceLink.modelID.length; i++ ){
+            ModelNames.add(ResourceLink.modelID[i]);
+        }
+
+        ModelGalleryAdapter mga = new ModelGalleryAdapter(context, ModelNames);
+        rv.setAdapter(mga);
 
         //show the dialog
         modelShowDialog.show();
