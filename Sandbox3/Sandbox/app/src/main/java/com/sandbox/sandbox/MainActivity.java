@@ -14,6 +14,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -30,6 +31,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -272,50 +274,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_ux);
 
-        //Get the Root View of this Activity
-        View rootView = getWindow().getDecorView().getRootView();
-        rootView.setOnTouchListener(new View.OnTouchListener() {
-            Handler handler = new Handler();
-
-            int numberOfTaps = 0;
-            long lastTapTimeMs = 0;
-            long touchDownMs = 0;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        touchDownMs = System.currentTimeMillis();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        handler.removeCallbacksAndMessages(null);
-                        //not a tap
-                        if ((System.currentTimeMillis() - touchDownMs) > ViewConfiguration.getTapTimeout()) {
-                            //it was not a tap
-                            numberOfTaps = 0;
-                            lastTapTimeMs = 0;
-                            break;
-                        }
-
-                        if (numberOfTaps > 0
-                                && (System.currentTimeMillis() - lastTapTimeMs) < ViewConfiguration.getDoubleTapTimeout()) {
-                            numberOfTaps += 1;
-                        } else {
-                            numberOfTaps = 1;
-                        }
-                        lastTapTimeMs = System.currentTimeMillis();
-
-                        if (numberOfTaps == 3) {
-                            //Triple Tap!
-                            //if we are in presentation mode this brings us back to edit mode
-                            ToggleMode();
-                        }
-                }
-
-                return true;
-            }
-        });
-
 
         AdjustorPanel = (LinearLayout) findViewById(R.id.adjusterpanel);
         AdjustorPanel.setVisibility(LinearLayout.GONE); //hide to start
@@ -323,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
         SetupAdjustorPanel();
 
         ControlPanelLayout = (LinearLayout) findViewById(R.id.cp);
-        //ControlPanelLayout.setVisibility(LinearLayout.G)
+        ControlPanelLayout.setVisibility(LinearLayout.VISIBLE);
 
 
 
@@ -404,6 +362,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 onSingleTap(e);
+                return true;
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent event) {
+                //Double Tap on Screen
+                Log.i("joe", "onDoubleTap");
+                ToggleMode();
+
                 return true;
             }
 
@@ -489,11 +456,12 @@ public class MainActivity extends AppCompatActivity {
         if(testModeFlag == 1){
             //We are in Test Mode
             //Change to Edit Mode
-            Log.i("joe", "User Triple Tap: Switch to Test Mode");
+            Log.i("joe", "User Double Tap: Switch to Test Mode");
             testModeFlag = 0;
             testLogCount = 0;
             fpsCount = 0;
             logDump();
+            ToggleToolbar();
         }
     }
 
@@ -1083,11 +1051,14 @@ public class MainActivity extends AppCompatActivity {
 
                     View view = renderable.getView();
                     //this.nodeView = view;
+
+
                     LinearLayout ll = (LinearLayout) view;
                     ViewGroup.LayoutParams params = ll.getLayoutParams();
                     //params.height = 1000;
                     params.width = 600;
                     ll.setLayoutParams(params);
+
 
 
 
@@ -1101,22 +1072,17 @@ public class MainActivity extends AppCompatActivity {
                     eobject.SetupImageTouch();
                     eobject.SetupControlPanel(view);
 
-
                     /*
-                    ImageView im = view.findViewById(R.id.imageview1);
-                    //set image to place
-                    im.setImageResource(ResourceLink.image_ids[i]);
+                    ViewGroup.LayoutParams params = eobject.image.getLayoutParams();
+                    //params.height = 1000;
+                    params.width = 600;
+                    eobject.image.setLayoutParams(params);
 
-                    //Setup on Touch Listener .. capture drags
-                    im.setOnTouchListener(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View view, MotionEvent motionEvent) {
 
-                            Log.i("joe", "image view has been touched");
-
-                            return false;
-                        }
-                    });
+                    LinearLayout ll = (LinearLayout) view;
+                    ViewGroup.LayoutParams params2 = ll.getLayoutParams();
+                    params2.height = params.height + 500;
+                    ll.setLayoutParams(params2);
                     */
 
 
@@ -1191,13 +1157,6 @@ public class MainActivity extends AppCompatActivity {
                 if( allObjects.size() <= 0 ) {
                     setupPremades();
                     userID = UUID.randomUUID().toString();;
-                    cp_playTour_fab.hide();
-                    cp_image_fab.hide();
-                    cp_audio_fab.hide();
-                    cp_model_fab.hide();
-                    cp_save_fab.hide();
-                    cp_slideshow_fab.hide();
-                    cp_video_fab.hide();
 
                     ToggleToolbar();
                 }
@@ -1208,7 +1167,11 @@ public class MainActivity extends AppCompatActivity {
 
     //show or hide the Toolbar containing all the floating action buttons
     public void ToggleToolbar(){
-
+        if(ControlPanelLayout.getVisibility() == LinearLayout.VISIBLE){
+            ControlPanelLayout.setVisibility(LinearLayout.GONE);
+        }else if(ControlPanelLayout.getVisibility() == LinearLayout.GONE){
+            ControlPanelLayout.setVisibility(LinearLayout.VISIBLE);
+        }
     }
 
 
@@ -1372,7 +1335,7 @@ Log.i("joe", "Music Player is False.. Start it");
                 } else {
                     //Only change if we are closer
                     if (Distance < closeDistance) {
-                        closestIndex = i;
+                                            closestIndex = i;
                         closeDistance = Distance;
                     }
                 }

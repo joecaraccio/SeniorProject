@@ -34,7 +34,7 @@ public class DBObj
 
     public DBObj( String name, String type, float x, float y, float z, float rx, float ry, float rz, float rw, float s, List<String> info)
     {
-        this.tourName = name;
+        this.tourName = name.toLowerCase();
         this.objectType = type;
         this.objLocX = x;
         this.objLocY = y;
