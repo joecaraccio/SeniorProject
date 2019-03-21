@@ -231,6 +231,15 @@ public class MainActivity extends AppCompatActivity {
     //place holder for music dialog
     int AudioPoint = 0;
 
+
+    //Focused Node is the Editable Node
+    private FocusedNode = null;
+
+    //Top Right Adjuster Panel.. semi transparent
+    //Draw the Radius
+    //Editable Radius?
+
+
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     // CompletableFuture requires api level 24
@@ -477,15 +486,7 @@ public class MainActivity extends AppCompatActivity {
 
     //show and hide adjustor panels
     private void ToggleAdjustorPanel(){
-        /*
-        if(AdjusterPanelActive == true){
-            AdjusterPanelActive = false;
-            AdjustorPanel.setVisibility(LinearLayout.GONE);
-        }else{
-            AdjusterPanelActive = true;
-            AdjustorPanel.setVisibility(LinearLayout.VISIBLE);
-        }
-        */
+
     }
 
     //Sets up Elements controlling the AdjustorPanel
@@ -1590,6 +1591,12 @@ Log.i("joe", "Music Player is False.. Start it");
         }
         return theimage;
     }
+
+    //Adjustor Panel.. Node Completion
+    public void CloseAdjustorPanel(){
+        FocusedNode = false;
+    }
+
 
 
 

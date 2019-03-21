@@ -44,19 +44,26 @@ public class SoundGalleryAdapter extends RecyclerView.Adapter<SoundGalleryAdapte
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        //Integer image = mData.get(position);
-        //holder.myImageview.setImageResource(image);
-
         holder.myTextView.setText(mData.get(position));
+        holder.iV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("joe", "Sound Position " + Integer.toString(position) + " Pressed");
+                ((MainActivity) context).SoundDialogCallback(position);
+            }
+        });
+
+
+
+        /*
         holder.myTextView.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View v) {
                  Log.i("joe", "Sound Position " + Integer.toString(position) + " Pressed");
                  ((MainActivity) context).SoundDialogCallback(position);
-
              }
-
         });
+        */
 
         /*
         //picture press
@@ -84,9 +91,11 @@ public class SoundGalleryAdapter extends RecyclerView.Adapter<SoundGalleryAdapte
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView myTextView;
+        View iV;
         public ImageView myImageview;
         ViewHolder(View itemView) {
             super(itemView);
+            iV = itemView;
             myTextView = itemView.findViewById(R.id.soundName);
             //myImageview = itemView.findViewById(R.id.img);
             itemView.setOnClickListener(this);
@@ -94,8 +103,6 @@ public class SoundGalleryAdapter extends RecyclerView.Adapter<SoundGalleryAdapte
 
         @Override
         public void onClick(View view) {
-
-
 
         }
     }
