@@ -12,7 +12,6 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +35,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
@@ -52,19 +50,13 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.sandbox.sandbox.MongoCom.DBObj;
-import com.sandbox.sandbox.MongoCom.MongoCom;
 import com.sandbox.sandbox.adapters.ImageGalleryAdapter;
 import com.sandbox.sandbox.adapters.ModelGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
 import com.sandbox.sandbox.gallery.MainGallery;
-import com.sandbox.sandbox.gallery.ModelGallery;
 import com.sandbox.sandbox.tools.SoundObject;
-
-import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -660,10 +652,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void CP_Press_Model(){
         Log.d("benmiller", "Model button pressed");
-        Intent intent = new Intent(this, ModelGallery.class);
+        Intent intent = new Intent(this, MainGallery.class);
         Log.d("benmiller", "after intent created");
         startActivityForResult(intent, ImagePickResult);
-        Log.d( "benmiller", "this happen?" );
+
     }
 
     private void CP_Press_Image(){
@@ -798,15 +790,26 @@ public class MainActivity extends AppCompatActivity {
         ModelRenderable.builder()
                 .setSource(this, R.raw.model)
                 .build()
-                .thenAccept(renderable -> museumRenderable = renderable)
+                .thenAccept(renderable -> {
+                    andyRenderable = renderable;
+                    n1.setRenderable(andyRenderable);
+                    CreateObject("3DModel", i, an, n1, 1.0f);
+                })
+
                 .exceptionally(
                         throwable -> {
+                            Log.i("benmiller", "model not built");
                             Toast toast =
-                                    Toast.makeText(this, "Unable to load museum renderable", Toast.LENGTH_LONG);
+                                    Toast.makeText(this, "Unable to load andy renderable", Toast.LENGTH_LONG);
                             toast.setGravity(Gravity.CENTER, 0, 0);
                             toast.show();
                             return null;
                         });
+
+
+
+
+
 
     }
 
@@ -888,7 +891,7 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton cp_model_fab = (FloatingActionButton) ControlPanel.findViewById(R.id.cp_model);
         cp_model_fab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                CP_Press_Model();
+                ModelSelectorDialog();
             }
         });
 
@@ -1296,7 +1299,7 @@ Log.i("joe", "Music Player is False.. Start it");
 
     //called when an 3D model is pressed
     public void ModelDialogCallback(Integer i){
-        Log.i("joe", "3D Model callback has been pressed");
+        Log.i("benmiller", "3D Model callback has been pressed");
         //verify dialog view is open
         if(modeldialog != null && modeldialog.isShowing() == true){
             modeldialog.dismiss();

@@ -51,13 +51,7 @@
 
         </activity>
 
-        <activity android:name=".gallery.ModelGallery"
-            android:label="Select Model"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme2">
-
-        </activity>
-"
+        "
 
         <activity
             android:name=".gallery.MainGallery"
