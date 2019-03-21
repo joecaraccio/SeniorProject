@@ -52,12 +52,16 @@
 
         </activity>
 
+        "
 
         <activity
             android:name=".gallery.MainGallery"
             android:label="Select Image"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme2">
+
+
+
 
 
         </activity>

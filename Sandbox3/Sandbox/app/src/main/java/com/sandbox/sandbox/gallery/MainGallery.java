@@ -16,6 +16,15 @@ import java.util.ArrayList;
 
 public class MainGallery extends AppCompatActivity {
 
+    public final String model_title[] = {
+        "temple lion"
+
+    };
+
+    public final Integer model_IDs[] = {
+        R.mipmap.model
+    };
+
     public final String image_titles[] = {
             "Bonnie Schiffman - Iggy Pop",
             "Catherine Graffam",

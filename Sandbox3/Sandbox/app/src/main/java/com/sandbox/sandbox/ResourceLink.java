@@ -68,4 +68,14 @@ public class ResourceLink {
             R.raw.explanation_of_connection_between_photogenics_and_dancers,
             R.raw.connection_to_library_exhibition
     };
+
+    public final static String modelNames[] = {
+            "temple_lion"
+    };
+
+    public final static Integer modelID[] = {
+            R.mipmap.model
+    };
+
+
 }
