@@ -61,6 +61,7 @@ import com.sandbox.sandbox.adapters.ModelGalleryAdapter;
 import com.sandbox.sandbox.adapters.SoundGalleryAdapter;
 import com.sandbox.sandbox.gallery.CreateList;
 import com.sandbox.sandbox.gallery.MainGallery;
+import com.sandbox.sandbox.gallery.ModelGallery;
 import com.sandbox.sandbox.tools.SoundObject;
 
 import org.bson.Document;
@@ -88,10 +89,12 @@ public class MainActivity extends AppCompatActivity {
 
     //Activity Results
     public static final int ImagePickResult = 1;
+    public static final int ModelPickResult = 1;
 
 
     private ArFragment arFragment;
     private ModelRenderable andyRenderable;
+    private ModelRenderable museumRenderable;
     private GestureDetector gestureDetector;
     private Session session;
 
@@ -656,7 +659,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void CP_Press_Model(){
-
+        Log.d("benmiller", "Model button pressed");
+        Intent intent = new Intent(this, ModelGallery.class);
+        Log.d("benmiller", "after intent created");
+        startActivityForResult(intent, ImagePickResult);
+        Log.d( "benmiller", "this happen?" );
     }
 
     private void CP_Press_Image(){
@@ -777,6 +784,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    //Called from the result of our modelpicker
+    //passed information of where model is
+    private void SetupModelComponent(int i){
+        Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
+
+        //Setup the Node
+        AnchorNode an = GetFaceNode();
+        Node n1 = an.getChildren().get(0);
+
+        // When you build a Renderable, Sceneform loads its resources in the background while returning
+        // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
+        ModelRenderable.builder()
+                .setSource(this, R.raw.model)
+                .build()
+                .thenAccept(renderable -> museumRenderable = renderable)
+                .exceptionally(
+                        throwable -> {
+                            Toast toast =
+                                    Toast.makeText(this, "Unable to load museum renderable", Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
+                            return null;
+                        });
+
+    }
+
+
+
+
     //Called from the result of our imagePicker
     //passed information of where our image is
     private void SetupImageComponent(int i){
@@ -812,7 +848,7 @@ public class MainActivity extends AppCompatActivity {
                     //
 
                     //Used to add item to the allObject list
-                    CreateObject("image",i, an, n1, 1.0f);
+                            CreateObject("image",i, an, n1, 1.0f);
                 })
         .exceptionally(
                 (throwable) -> {
@@ -1112,31 +1148,31 @@ Log.i("joe", "Music Player is False.. Start it");
     //dialog views
 
     private void ModelSelectorDialog(){
-        modelShowDialog = new Dialog(context);
-        View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_image_selector, null);
-        modelShowDialog.setContentView(convertView);
-        modelShowDialog.setTitle("Select 3D Model");
+        modeldialog = new Dialog(context);
+        View convertView = LayoutInflater.from(context).inflate(R.layout.dialog_model_selector, null);
+        modeldialog.setContentView(convertView);
+        modeldialog.setTitle("Select 3D Model");
 
 
-        RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.imagegallery);
+        RecyclerView rv = (RecyclerView) convertView.findViewById(R.id.modelgallery);
 
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 3);
         rv.setLayoutManager(layoutManager);
         rv.setHasFixedSize(true);
 
-        ArrayList<Integer> ModelNames = new ArrayList<>();
+        ArrayList<Integer> ModelIDs = new ArrayList<>();
 
         for(int i = 0; i < ResourceLink.modelID.length; i++ ){
-            ModelNames.add(ResourceLink.modelID[i]);
+            ModelIDs.add(ResourceLink.modelID[i]);
         }
 
-        ModelGalleryAdapter mga = new ModelGalleryAdapter(context, ModelNames);
+        ModelGalleryAdapter mga = new ModelGalleryAdapter(context, ModelIDs);
         rv.setAdapter(mga);
 
         //show the dialog
-        modelShowDialog.show();
+        modeldialog.show();
         //resize dialog
-        modelShowDialog.getWindow().setLayout(dialogWindowWidth, dialogWindowHeight);
+        modeldialog.getWindow().setLayout(dialogWindowWidth, dialogWindowHeight);
 
     }
 
@@ -1255,6 +1291,18 @@ Log.i("joe", "Music Player is False.. Start it");
             soundDialog.dismiss();
             Log.i("joe", "time to create a sound view");
             SetupSoundComponent(i);
+        }
+    }
+
+    //called when an 3D model is pressed
+    public void ModelDialogCallback(Integer i){
+        Log.i("joe", "3D Model callback has been pressed");
+        //verify dialog view is open
+        if(modeldialog != null && modeldialog.isShowing() == true){
+            modeldialog.dismiss();
+            Log.i("joe", "creating 3D model");
+            SetupModelComponent(i);
+
         }
     }
 

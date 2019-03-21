@@ -74,7 +74,7 @@ public class ResourceLink {
     };
 
     public final static Integer modelID[] = {
-            R.raw.model
+            R.mipmap.model
     };
 
 

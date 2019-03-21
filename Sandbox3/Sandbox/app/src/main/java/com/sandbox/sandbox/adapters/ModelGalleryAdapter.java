@@ -1,6 +1,7 @@
 package com.sandbox.sandbox.adapters;
 
 import android.content.Context;
+import android.media.Image;
 import android.opengl.GLSurfaceView;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 
@@ -16,6 +18,7 @@ import com.sandbox.sandbox.R;
 import com.sandbox.sandbox.gallery.MainGallery;
 
 import java.util.List;
+
 
 public class ModelGalleryAdapter extends RecyclerView.Adapter<ModelGalleryAdapter.ViewHolder> {
 
@@ -35,20 +38,20 @@ public class ModelGalleryAdapter extends RecyclerView.Adapter<ModelGalleryAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View view = mInflater.inflate(R.layout.cell_model, viewGroup, false );
+        View view = mInflater.inflate(R.layout.cell_image, viewGroup, false );
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         Integer gL = mData.get(i);
-        viewHolder.gLView.setBackgroundResource(gL);
+        viewHolder.modelView.setBackgroundResource(gL);
 
-        viewHolder.gLView.setOnClickListener(new View.OnClickListener() {
+        viewHolder.modelView.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                ((MainActivity) context).ImageDialogCallback(i);
+                ((MainActivity) context).ModelDialogCallback(i);
             }
         });
     }
@@ -58,13 +61,15 @@ public class ModelGalleryAdapter extends RecyclerView.Adapter<ModelGalleryAdapte
         return mData.size();
     }
 
+
+    // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // GLSurfaceView objects
-        private GLSurfaceView gLView;
+        private ImageView modelView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            gLView = itemView.findViewById(R.id.model);
+            modelView = itemView.findViewById(R.id.model);
             itemView.setOnClickListener(this);
 
         }
