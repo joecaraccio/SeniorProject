@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoCom", "MongoCom\MongoCom.csproj", "{A8BEC61F-2B6A-475E-9BCE-08D51890F5F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoComTest", "MongoComTest\MongoComTest.csproj", "{B7E203B8-AD19-40F9-952C-05A65C6C0DA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoComTest", "MongoComTest\MongoComTest.csproj", "{B7E203B8-AD19-40F9-952C-05A65C6C0DA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp4", "ConsoleApp4\ConsoleApp4.csproj", "{86C2760B-2462-4583-82FC-B2B30BBAD24C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{B7E203B8-AD19-40F9-952C-05A65C6C0DA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7E203B8-AD19-40F9-952C-05A65C6C0DA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7E203B8-AD19-40F9-952C-05A65C6C0DA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C2760B-2462-4583-82FC-B2B30BBAD24C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C2760B-2462-4583-82FC-B2B30BBAD24C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C2760B-2462-4583-82FC-B2B30BBAD24C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C2760B-2462-4583-82FC-B2B30BBAD24C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

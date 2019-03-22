@@ -15,11 +15,11 @@ namespace MongoCom
         private string connectionString;
         private MongoClient dbClient;
         private IMongoDatabase dataBase;
-        
+
         public HoloTourCom(String tourName)
         {
-            connectionString = "mongodb://admin:TourGuide3546@ds157574.mlab.com:57574/holotours";
-            dbClient = new MongoClient(connectionString); 
+            connectionString = "mongodb://admin:admin1@cluster0-shard-00-00-ka88r.mongodb.net:27017,cluster0-shard-00-01-ka88r.mongodb.net:27017,cluster0-shard-00-02-ka88r.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true";
+            dbClient = new MongoClient(connectionString);
             dataBase = dbClient.GetDatabase("holotours");
             this.tourName = tourName;
         }
@@ -28,13 +28,13 @@ namespace MongoCom
             var names = new List<String>();
             var collection = dataBase.GetCollection<BsonDocument>("tours");
             List<BsonDocument> tours = collection.Find(Builders<BsonDocument>.Filter.Empty).ToList();
-            foreach(BsonDocument doc in tours)
+            foreach (BsonDocument doc in tours)
             {
-                names.Add((string)doc["tourString"]);
+                names.Add((string)doc["tourName"]);
             }
             return names;
         }
-        public void createNewTour( double height)
+        public void createNewTour(double height)
         {
             if (showAllTourNames().Contains(tourName))
             {
@@ -75,7 +75,7 @@ namespace MongoCom
             List<String> dbNames = dataBase.ListCollectionNames().ToList();
             var tourStuff = new List<BsonDocument>();
             var col = dataBase.GetCollection<BsonDocument>("foundStuff");
-            foreach ( String s in dbNames)
+            foreach (String s in dbNames)
             {
                 if (s == "tours" || s == "userLogData" || s == "system.indexes")
                 {
@@ -116,7 +116,7 @@ namespace MongoCom
                 else
                 {
                     var collection = dataBase.GetCollection<BsonDocument>((string)s);
-                    if(collection.Find(filter).Any())
+                    if (collection.Find(filter).Any())
                         collection.DeleteMany(filter);
                     else
                     {
@@ -126,6 +126,25 @@ namespace MongoCom
                 }
             }
 
+
+        }
+        public List<LogInfo> dumpLogInfo()
+        {
+            var docs = new List<LogInfo>();
+            var collection = dataBase.GetCollection<BsonDocument>("tours");
+            List<BsonDocument> tours = collection.Find(Builders<BsonDocument>.Filter.Empty).ToList();
+            foreach (BsonDocument doc in tours)
+            {
+                docs.Add(new LogInfo(doc));
+            }
+            return docs;
+        }
+        public void deleteLogInfo()
+        {
+            var filter = Builders<BsonDocument>.Filter.Empty;
+            //loop through each collection
+            var collection = dataBase.GetCollection<BsonDocument>("tours");
+            collection.DeleteMany(filter);
 
         }
         public ObjectId returnTourId()

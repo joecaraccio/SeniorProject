@@ -1,0 +1,9 @@
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\bin\Release\netstandard2.0\MongoCom.deps.json
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\bin\Release\netstandard2.0\MongoCom.dll
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\bin\Release\netstandard2.0\MongoCom.pdb
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\obj\Release\netstandard2.0\MongoCom.csprojAssemblyReference.cache
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\obj\Release\netstandard2.0\MongoCom.csproj.CoreCompileInputs.cache
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\obj\Release\netstandard2.0\MongoCom.AssemblyInfoInputs.cache
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\obj\Release\netstandard2.0\MongoCom.AssemblyInfo.cs
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\obj\Release\netstandard2.0\MongoCom.dll
+E:\SeniorProject\SeniorProject\NoahCode\MongoCom\MongoCom\obj\Release\netstandard2.0\MongoCom.pdb
