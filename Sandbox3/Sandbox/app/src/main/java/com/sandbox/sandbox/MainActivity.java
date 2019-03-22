@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //Focused Node is the Editable Node
-    private FocusedNode = null;
+   // private FocusedNode = null;
 
     //Top Right Adjuster Panel.. semi transparent
     //Draw the Radius
@@ -796,7 +796,7 @@ public class MainActivity extends AppCompatActivity {
     //Creates Node Faceing at Point
     private AnchorNode GetFaceNode(){
         //create a pose slightly in front of camera
-        float distanceFromFace = -2.5f;
+        float distanceFromFace = -1.5f;
         Pose currentPose = arFragment.getArSceneView().getArFrame().getAndroidSensorPose().compose(Pose.makeTranslation(0,0,distanceFromFace)).extractTranslation();
         Vector3 WorldPosition = GetCameraPosition();
         float tempCardLocation[] = currentPose.getTranslation();
@@ -1048,10 +1048,14 @@ public class MainActivity extends AppCompatActivity {
     //passed information of where model is
     private void SetupModelComponent(int i){
         Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
+        Log.i("joe", "setup model");
 
         //Setup the Node
         AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
+
+        //flip the model
+        n1.setLocalRotation(Quaternion.axisAngle(new Vector3(1f, 0, 0), 180f));
 
         // When you build a Renderable, Sceneform loads its resources in the background while returning
         // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
@@ -1662,9 +1666,7 @@ Log.i("joe", "Music Player is False.. Start it");
     }
 
     //Adjustor Panel.. Node Completion
-    public void CloseAdjustorPanel(){
-        FocusedNode = false;
-    }
+
 
 
 

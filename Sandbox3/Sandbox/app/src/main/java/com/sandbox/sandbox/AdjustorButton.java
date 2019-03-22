@@ -1,6 +1,8 @@
 package com.sandbox.sandbox;
 
 
+import com.google.ar.sceneform.Node;
+
 //contains up and down buttons to allow incriment and decrement
 public class AdjustorButton {
     private float Value;
@@ -22,9 +24,7 @@ public class AdjustorButton {
 
     //Adjust node
     public void Adjust(float delta){
-        if(cord == 0){
-            
-        }
+
     }
 
 

@@ -41,7 +41,7 @@
   },
   samplers: [
     {
-      file: 'sampledata\\model.jpg',
+      file: 'sampledata/model.jpg',
       name: 'model',
       pipeline_name: 'model.jpg',
     },
