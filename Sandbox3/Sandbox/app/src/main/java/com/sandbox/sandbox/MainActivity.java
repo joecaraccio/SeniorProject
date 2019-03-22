@@ -741,11 +741,11 @@ public class MainActivity extends AppCompatActivity {
                                 List<String> temp = obj.returnInfo();
                                 int index = Integer.parseInt(temp.get(0));
                                 if( obj.returnObjType().equals("image"))
-                                    SetupImageComponent(index, CreateFaceNode(obj), 1);
+                                    SetupImageComponent(index, CreateFaceNode(obj), 1, obj.returnScale());
                                 else if(obj.returnObjType().equals("sound"))
                                     SetupSoundComponent(index, CreateFaceNode(obj), 1);
                                 else if(obj.returnObjType().equals("3DModel"))
-                                    SetupModelComponent(index, CreateFaceNode(obj), 1);
+                                    SetupModelComponent(index, CreateFaceNode(obj), 1, obj.returnScale());
                             }
                         }
                         testModeFlag = 1;
@@ -953,7 +953,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ImagePickResult) {
            Log.i("joe","ImagePickResult");
            //Image has been picked
-            SetupImageComponent((int) data.getExtras().get("Selected Picture Index"), GetFaceNode(), 0);
+            SetupImageComponent((int) data.getExtras().get("Selected Picture Index"), GetFaceNode(), 0, 1.0f);
 
         }
     }
@@ -1048,7 +1048,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Called from the result of our modelpicker
     //passed information of where model is
-    private void SetupModelComponent(int i, AnchorNode an, int premadeFlag){
+    private void SetupModelComponent(int i, AnchorNode an, int premadeFlag, float Scale){
         Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
         Log.i("joe", "setup model");
 
@@ -1094,11 +1094,12 @@ public class MainActivity extends AppCompatActivity {
     //Called from the result of our imagePicker
     //passed information of where our image is
     //https://stackoverflow.com/questions/3669239/how-to-drag-an-image-by-touching-in-android
-    private void SetupImageComponent(int i, AnchorNode an, int premadeFlag){
+    private void SetupImageComponent(int i, AnchorNode an, int premadeFlag, float scalevalue){
         Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
 
         //Setup the Node
         Node n1 = an.getChildren().get(0);
+        final float ScaleValue = scalevalue;
 
         ViewRenderable.builder().setView(this, R.layout.sandbox_ui_image).build()
                 .thenAccept(
@@ -1111,8 +1112,12 @@ public class MainActivity extends AppCompatActivity {
 
                     LinearLayout ll = (LinearLayout) view;
                     ViewGroup.LayoutParams params = ll.getLayoutParams();
-                    //params.height = 1000;
-                    params.width = 600;
+
+                    float SV = scalevalue * 600;
+                    int NewWidth = (int) SV;
+
+
+                    params.width = NewWidth;
                     ll.setLayoutParams(params);
 
 
@@ -1625,7 +1630,7 @@ Log.i("joe", "Music Player is False.. Start it");
         if(imageDialog != null && imageDialog.isShowing() == true){
             imageDialog.dismiss();
             Log.i("joe", "time to create an image view");
-            SetupImageComponent(i, GetFaceNode(), 0);
+            SetupImageComponent(i, GetFaceNode(), 0, 1.0f);
             //if( allObjects.size() > 2 )
             //    objectDump();
         }
@@ -1650,7 +1655,7 @@ Log.i("joe", "Music Player is False.. Start it");
             modeldialog.dismiss();
             Log.i("joe", "creating 3D model");
             AnchorNode an = GetFaceNode();
-            SetupModelComponent(i, an, 0);
+            SetupModelComponent(i, an, 0, 1.0f);
 
         }
     }
