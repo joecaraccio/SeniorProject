@@ -744,6 +744,8 @@ public class MainActivity extends AppCompatActivity {
                                     SetupImageComponent(index, CreateFaceNode(obj), 1);
                                 else if(obj.returnObjType().equals("sound"))
                                     SetupSoundComponent(index, CreateFaceNode(obj), 1);
+                                else if(obj.returnObjType().equals("3DModel"))
+                                    SetupModelComponent(index, CreateFaceNode(obj), 1);
                             }
                         }
                         testModeFlag = 1;
@@ -1046,12 +1048,11 @@ public class MainActivity extends AppCompatActivity {
 
     //Called from the result of our modelpicker
     //passed information of where model is
-    private void SetupModelComponent(int i){
+    private void SetupModelComponent(int i, AnchorNode an, int premadeFlag){
         Log.i("joe","Setup Image Component for index: " + Integer.toString(i));
         Log.i("joe", "setup model");
 
         //Setup the Node
-        AnchorNode an = GetFaceNode();
         Node n1 = an.getChildren().get(0);
 
         //flip the model
@@ -1065,7 +1066,9 @@ public class MainActivity extends AppCompatActivity {
                 .thenAccept(renderable -> {
                     andyRenderable = renderable;
                     n1.setRenderable(andyRenderable);
-                    CreateObject("3DModel", i, an, n1, 1.0f);
+                    if( premadeFlag == 0) {
+                        CreateObject("3DModel", i, an, n1, 1.0f);
+                    }
                 })
 
                 .exceptionally(
@@ -1646,7 +1649,8 @@ Log.i("joe", "Music Player is False.. Start it");
         if(modeldialog != null && modeldialog.isShowing() == true){
             modeldialog.dismiss();
             Log.i("joe", "creating 3D model");
-            SetupModelComponent(i);
+            AnchorNode an = GetFaceNode();
+            SetupModelComponent(i, an, 0);
 
         }
     }
